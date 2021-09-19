@@ -1,0 +1,22 @@
+[package]
+name = "osubelgiumbot"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+twilight-gateway="0.6.2"
+twilight-http = "0.6"
+twilight-model = "0.6"
+twilight-standby = "0.6"
+twilight-cache-inmemory="0.6.1"
+futures="0.3.17"
+tokio={version="1.11.0", features=["full"]}
+dotenv="0.15.0"
+log="0.4.0"
+env_logger="0.9.0"
+songbird={version="0.2.0", default-features=false, features=["driver", "twilight-rustls", "zlib-stock"]}
+rosu-v2="0.2"
+irc="0.15"
+parking_lot={version="0.11", default-features=false, features=["send_guard"]}
