@@ -1,6 +1,5 @@
 use chrono::{DateTime, Utc};
 use prometheus::{IntCounter, IntCounterVec, Opts, Registry};
-use std::sync::Arc;
 
 pub struct EventStats {
     pub channel_create: IntCounter,

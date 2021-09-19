@@ -1,6 +1,5 @@
 use irc::error::Error as IrcError;
 use rosu_v2::prelude::OsuError;
-use std::env::VarError;
 use std::error::Error as StdError;
 use std::fmt;
 use twilight_gateway::cluster::{ClusterCommandError, ClusterStartError};
