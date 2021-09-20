@@ -36,8 +36,14 @@ use std::{env, sync::Arc};
 use twilight_cache_inmemory::{InMemoryCache, ResourceType};
 use twilight_gateway::{Cluster, Event, EventTypeFlags, Intents};
 use twilight_http::Client as HttpClient;
-use twilight_model::gateway::presence::{ActivityType, Status};
+use twilight_model::{
+    application::interaction::Interaction,
+    gateway::presence::{ActivityType, Status},
+    id::GuildId,
+};
 use twilight_standby::Standby;
+
+use crate::commands::handle_interaction;
 
 #[macro_use]
 extern crate log;
@@ -61,6 +67,7 @@ async fn async_main() -> BotResult<()> {
 
     let http = HttpClient::new(token.clone());
     let user_id = http.current_user().exec().await?.model().await?.id;
+    http.set_application_id(user_id.0.into());
 
     let intents = Intents::GUILDS
         | Intents::GUILD_MEMBERS
@@ -102,7 +109,9 @@ async fn async_main() -> BotResult<()> {
         .resource_types(ResourceType::VOICE_STATE)
         .build();
 
-    let database = Database {};
+    let database_url =
+        env::var("DATABASE_URL").expect("Missing environment variable (DATABASE_URL).");
+    let database = Database::new(&database_url).await?;
 
     let client_id = env::var("OSU_CLIENT_ID")
         .expect("Missing environment variable (OSU_CLIENT_ID).")
@@ -110,6 +119,14 @@ async fn async_main() -> BotResult<()> {
         .expect("osu! client ID must be a number.");
     let client_secret =
         env::var("OSU_CLIENT_SECRET").expect("Missing environment variable (OSU_CLIENT_SECRET).");
+
+    let commands = commands::twilight_commands();
+    let guild_id = if cfg!(debug_assertions) {
+        GuildId(297072529426612224)
+    } else {
+        GuildId(277469642908237826)
+    };
+    http.set_guild_commands(guild_id, &commands)?.exec().await?;
 
     let osu = Osu::new(client_id, client_secret).await?;
 
@@ -169,6 +186,11 @@ async fn handle_event(ctx: Arc<Context>, event: Event, shard_id: u64) -> BotResu
         Event::GatewayReconnect => {
             info!("Gateway requested shard {} to reconnect", shard_id);
             ctx.stats.event_counts.gateway_reconnect.inc();
+        }
+        Event::InteractionCreate(e) => {
+            if let Interaction::ApplicationCommand(command) = e.0 {
+                handle_interaction(ctx, *command).await?;
+            }
         }
         Event::Ready(_) => {
             info!("Shard {} is ready", shard_id);

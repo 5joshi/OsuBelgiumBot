@@ -14,6 +14,7 @@ flexi_logger = { version = "0.19", default-features = false, features = [
     "compress",
 ] }
 futures = "0.3.17"
+hashbrown = "0.11"
 irc = "0.15"
 log = "0.4.0"
 once_cell = "1.4"
@@ -26,6 +27,14 @@ songbird = { version = "0.2.0", default-features = false, features = [
     "driver",
     "twilight-rustls",
     "zlib-stock",
+] }
+sqlx = { version = "0.5", default-features = false, features = [
+    "chrono",
+    "json",
+    "macros",
+    "migrate",
+    "postgres",
+    "runtime-tokio-native-tls",
 ] }
 tokio = { version = "1.11.0", features = ["full"] }
 twilight-cache-inmemory = "0.6.1"

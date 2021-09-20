@@ -1,0 +1,3 @@
+[21-09-20 21:17:35] INFO  [twilight_gateway_queue:137] shard 0/1 waiting for allowance 
+[21-09-20 21:17:36] ERROR [src\main.rs:57] Critical Error in main: Error while using Twilight HTTP.
+[21-09-20 21:17:36] ERROR [src\main.rs:57]   - caused by: Response error: status code 403, error: Error code 50001: Missing Access
