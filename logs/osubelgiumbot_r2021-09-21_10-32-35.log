@@ -1,6 +1,0 @@
-[21-09-21 10:31:01] INFO  [twilight_gateway_queue:137] shard 0/1 waiting for allowance 
-[21-09-21 10:31:02] INFO  [src\main.rs:220] Shard 0 is identifying...
-[21-09-21 10:31:02] INFO  [src\main.rs:218] Shard 0 is connecting...
-[21-09-21 10:31:02] INFO  [src\main.rs:217] Shard 0 is connected
-[21-09-21 10:31:02] INFO  [src\main.rs:198] Shard 0 is ready
-[21-09-21 10:31:02] INFO  [src\main.rs:204] Game is set for shard 0
