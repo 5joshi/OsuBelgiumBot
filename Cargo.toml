@@ -23,6 +23,7 @@ parking_lot = { version = "0.11", default-features = false, features = [
 ] }
 prometheus = "0.12"
 rosu-v2 = { version = "0.2", features = ["cache", "metrics"] }
+slash_command_macro = { path = "./slash_command_macro" }
 songbird = { version = "0.2.0", default-features = false, features = [
     "driver",
     "twilight-rustls",

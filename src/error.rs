@@ -6,7 +6,8 @@ use sqlx::Error as SqlError;
 use std::error::Error as StdError;
 use std::fmt;
 use twilight_gateway::cluster::{ClusterCommandError, ClusterStartError};
-use twilight_http::request::application::{InteractionError, UpdateOriginalResponseError};
+use twilight_http::request::application::interaction::update_original_response::UpdateOriginalResponseError;
+use twilight_http::request::application::InteractionError;
 use twilight_http::request::prelude::create_message::CreateMessageError;
 use twilight_http::response::DeserializeBodyError;
 use twilight_http::Error as TwilightHttpError;
@@ -19,6 +20,7 @@ pub type BotResult<T> = Result<T, Error>;
 pub enum Error {
     ClusterCommand { src: ClusterCommandError },
     ClusterStart { src: ClusterStartError },
+    Command { name: &'static str, src: Box<Error> },
     CreateMessage { src: CreateMessageError },
     DeserializeBody { src: DeserializeBodyError },
     Interaction { src: InteractionError },
@@ -38,6 +40,7 @@ impl fmt::Display for Error {
         match self {
             Error::ClusterCommand { .. } => f.write_str("Error occurred on cluster request."),
             Error::ClusterStart { .. } => f.write_str("Failed to start cluster."),
+            Error::Command { name, .. } => write!(f, "Failed to execute command ({})", name),
             Error::CreateMessage { .. } => f.write_str("Failed to create message."),
             Error::DeserializeBody { .. } => f.write_str("Failed to deserialize Discord object."),
             Error::Interaction { .. } => f.write_str("Failed to interact with Discord."),
@@ -67,6 +70,7 @@ impl StdError for Error {
         match self {
             Error::ClusterCommand { src } => Some(src),
             Error::ClusterStart { src } => Some(src),
+            Error::Command { src, .. } => Some(src),
             Error::CreateMessage { src } => Some(src),
             Error::DeserializeBody { src } => Some(src),
             Error::Interaction { src } => Some(src),
