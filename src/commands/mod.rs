@@ -16,27 +16,6 @@ use crate::{
 
 const NUM_COMMANDS: usize = 1;
 
-pub enum BotCommand {
-    Ping(Ping),
-}
-
-impl BotCommand {
-    fn get(command: ApplicationCommand) -> BotResult<Self> {
-        match command.data.name.as_str() {
-            Ping::NAME => Ok(Self::Ping(Ping(command))),
-            _ => Err(Error::UnknownInteraction {
-                command: Box::new(command),
-            }),
-        }
-    }
-}
-
-trait SlashCommand {
-    const NAME: &'static str;
-
-    fn define() -> Command;
-}
-
 pub fn twilight_commands() -> [Command; NUM_COMMANDS] {
     [Ping::define()]
 }
@@ -66,7 +45,10 @@ pub async fn handle_interaction(ctx: Arc<Context>, command: ApplicationCommand) 
     log_slash(&ctx, &command, name);
     ctx.stats.increment_slash_command(name);
 
-    match BotCommand::get(command)? {
-        BotCommand::Ping(c) => c.run(ctx).await,
+    match name {
+        Ping::NAME => Ping::run(ctx, command).await,
+        _ => Err(Error::UnknownInteraction {
+            command: Box::new(command),
+        }),
     }
 }

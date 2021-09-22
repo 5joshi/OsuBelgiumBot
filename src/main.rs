@@ -48,6 +48,9 @@ use crate::commands::handle_interaction;
 #[macro_use]
 extern crate log;
 
+#[macro_use]
+extern crate slash_command_macro;
+
 fn main() {
     let runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
