@@ -15,7 +15,7 @@ use syn::{
 ///
 /// The following additional attributes can be specified:
 /// - `#[args = "..."]` to specify the type for arguments.
-/// The type must implement the function `async fn parse_options(Arc<Context>, Vec<CommandDataOptions>) -> BotResult<Self>`.
+/// The type must implement the function `async fn parse_options(Arc<Context>, CommandData) -> BotResult<Self>`.
 /// - `#[description = "..."]` must be specified to define the command's description.
 /// - `#[name = "..."]` for the command name. Defaults to the lowercase struct name.
 /// - `#[options = "..."]` for the function name that returns the command options as `Vec<CommandOption>`.
@@ -56,7 +56,7 @@ use syn::{
 /// struct RollArgs { limit: u64 }
 ///
 /// impl RollArgs {
-///     async fn parse_options(ctx: Arc<Context>, options: Vec<CommandDataOption>) -> BotResult<Self> {
+///     async fn parse_options(ctx: Arc<Context>, data: CommandData) -> BotResult<Self> {
 ///         Ok(Self { limit: 100 })
 ///     }
 /// }

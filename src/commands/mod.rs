@@ -6,23 +6,24 @@ mod utils;
 use std::sync::Arc;
 
 use twilight_model::application::{command::Command, interaction::ApplicationCommand};
-use utils::Ping;
+use utils::{Ping, Roll};
 
 use crate::{
     context::Context,
     error::{BotResult, Error},
     utils::ApplicationCommandExt,
 };
+pub use message::MessageActivity;
 
-const NUM_COMMANDS: usize = 1;
+const NUM_COMMANDS: usize = 2;
 
 pub fn twilight_commands() -> [Command; NUM_COMMANDS] {
-    [Ping::define()]
+    [Ping::define(), Roll::define()]
 }
 
 fn log_slash(ctx: &Context, command: &ApplicationCommand, cmd_name: &str) {
     let username = command.username().unwrap_or("<unknown user>");
-    let mut location = String::with_capacity(31);
+    let mut location = String::with_capacity(32);
 
     match command.guild_id.and_then(|id| ctx.cache.guild(id)) {
         Some(guild) => {
@@ -47,6 +48,7 @@ pub async fn handle_interaction(ctx: Arc<Context>, command: ApplicationCommand) 
 
     match name {
         Ping::NAME => Ping::run(ctx, command).await,
+        Roll::NAME => Roll::run(ctx, command).await,
         _ => Err(Error::UnknownInteraction {
             command: Box::new(command),
         }),

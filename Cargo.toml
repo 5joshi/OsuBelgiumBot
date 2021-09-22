@@ -5,6 +5,7 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
+async-trait = "0.1"
 chrono = { version = "0.4", features = ["serde"] }
 dashmap = "4.0"
 dotenv = "0.15.0"
@@ -22,6 +23,7 @@ parking_lot = { version = "0.11", default-features = false, features = [
     "send_guard",
 ] }
 prometheus = "0.12"
+rand = "0.8.4"
 rosu-v2 = { version = "0.2", features = ["cache", "metrics"] }
 slash_command_macro = { path = "./slash_command_macro" }
 songbird = { version = "0.2.0", default-features = false, features = [

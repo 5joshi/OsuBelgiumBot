@@ -21,6 +21,7 @@ mod osu_irc;
 mod stats;
 mod utils;
 
+use async_trait::async_trait;
 use context::Context;
 use dashmap::DashSet;
 use database::Database;
@@ -34,7 +35,7 @@ use songbird::Songbird;
 use stats::BotStats;
 use std::{env, sync::Arc};
 use twilight_cache_inmemory::{InMemoryCache, ResourceType};
-use twilight_gateway::{Cluster, Event, EventTypeFlags, Intents};
+use twilight_gateway::{cluster::Events, Cluster, Event, EventTypeFlags, Intents};
 use twilight_http::Client as HttpClient;
 use twilight_model::{
     application::interaction::Interaction,
@@ -44,6 +45,9 @@ use twilight_model::{
 use twilight_standby::Standby;
 
 use crate::commands::handle_interaction;
+
+#[macro_use]
+extern crate async_trait;
 
 #[macro_use]
 extern crate log;
@@ -159,6 +163,18 @@ async fn async_main() -> BotResult<()> {
 
     let ctx = Arc::new(ctx);
 
+    tokio::select! {
+        _ = event_loop(Arc::clone(&ctx), events) => {}
+        _ = graceful_shutdown() => {}
+    };
+
+    info!("Shutting down cluster...");
+    ctx.cluster.down();
+
+    Ok(())
+}
+
+async fn event_loop(ctx: Arc<Context>, mut events: Events) {
     while let Some((shard_id, event)) = events.next().await {
         ctx.cache.update(&event);
         ctx.standby.process(&event);
@@ -170,8 +186,12 @@ async fn async_main() -> BotResult<()> {
             }
         });
     }
+}
 
-    Ok(())
+async fn graceful_shutdown() {
+    if let Err(why) = tokio::signal::ctrl_c().await {
+        unwind_error!(error, why, "Failed to listen for ctrl-c event. {:?}");
+    }
 }
 
 async fn handle_event(ctx: Arc<Context>, event: Event, shard_id: u64) -> BotResult<()> {
