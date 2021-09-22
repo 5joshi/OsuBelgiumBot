@@ -1,0 +1,14 @@
+[21-09-20 21:28:55] INFO  [twilight_gateway_queue:137] shard 0/1 waiting for allowance 
+[21-09-20 21:28:56] INFO  [src\main.rs:216] Shard 0 is connecting...
+[21-09-20 21:28:56] INFO  [src\main.rs:218] Shard 0 is identifying...
+[21-09-20 21:28:56] INFO  [src\main.rs:196] Shard 0 is ready
+[21-09-20 21:28:56] INFO  [src\main.rs:215] Shard 0 is connected
+[21-09-20 21:28:56] INFO  [src\main.rs:202] Game is set for shard 0
+[21-09-20 21:29:22] INFO  [src\commands\mod.rs:61] [Private] 5joshi: /ping
+[21-09-20 21:29:28] INFO  [src\commands\mod.rs:61] [Private] 5joshi: /ping
+[21-09-20 21:29:42] INFO  [src\commands\mod.rs:61] [Private] Badewanne3: /ping
+[21-09-20 21:29:46] INFO  [src\commands\mod.rs:61] [Private] 5joshi: /ping
+[21-09-20 21:29:50] INFO  [src\commands\mod.rs:61] [Private] 5joshi: /ping
+[21-09-20 21:29:56] INFO  [src\commands\mod.rs:61] [Private] 5joshi: /ping
+[21-09-20 21:30:20] INFO  [src\commands\mod.rs:61] [Private] The17thCaillou: /ping
+[21-09-20 21:30:26] INFO  [src\commands\mod.rs:61] [Private] The17thCaillou: /ping

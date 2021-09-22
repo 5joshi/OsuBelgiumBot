@@ -198,9 +198,9 @@ impl ToTokens for Command {
                         let fut = #args_name::parse_options(Arc::clone(&ctx), options)
                             .and_then(|args| #run_name(ctx, command, args))
                             .map_err(Box::new)
-                            .map_err(|source| crate::Error::Command {
+                            .map_err(|src| crate::Error::Command {
                                 name: #cmd_name,
-                                source,
+                                src,
                             });
 
                         #fut_name { fut: Box::pin(fut) }
@@ -215,9 +215,9 @@ impl ToTokens for Command {
 
                         let fut = #run_name(ctx, command)
                             .map_err(Box::new)
-                            .map_err(|source| crate::Error::Command {
+                            .map_err(|src| crate::Error::Command {
                                 name: #cmd_name,
-                                source,
+                                src,
                             });
 
                         #fut_name { fut: Box::pin(fut) }
