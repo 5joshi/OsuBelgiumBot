@@ -126,7 +126,9 @@ async fn async_main() -> BotResult<()> {
     } else {
         GuildId(277469642908237826)
     };
+
     http.set_guild_commands(guild_id, &commands)?.exec().await?;
+    http.set_global_commands(&[])?.exec().await?;
 
     let osu = Osu::new(client_id, client_secret).await?;
 
@@ -208,6 +210,7 @@ async fn handle_event(ctx: Arc<Context>, event: Event, shard_id: u64) -> BotResu
                 ),
             }
         }
+        Event::MessageCreate(e) => ctx.database.insert_message(&(*e).0).await.map(|_| ())?,
         Event::Resumed => info!("Shard {} is resumed", shard_id),
         Event::RoleCreate(_) => ctx.stats.event_counts.role_create.inc(),
         Event::RoleDelete(_) => ctx.stats.event_counts.role_delete.inc(),

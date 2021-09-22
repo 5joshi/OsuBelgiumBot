@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Instant};
 
 use twilight_model::application::{
     callback::{CallbackData, InteractionResponse},
@@ -12,10 +12,12 @@ pub struct Ping(pub ApplicationCommand);
 
 impl Ping {
     pub async fn run(self, ctx: Arc<Context>) -> BotResult<()> {
+        let curr_time = Instant::now();
+
         let response = InteractionResponse::ChannelMessageWithSource(CallbackData {
             allowed_mentions: None,
             components: None,
-            content: Some("BIG CHUNGUS".to_string()),
+            content: Some(":ping_pong: Pong!".to_string()),
             embeds: vec![],
             flags: None,
             tts: None,
@@ -23,6 +25,14 @@ impl Ping {
 
         ctx.http
             .interaction_callback(self.0.id, &self.0.token, &response)
+            .exec()
+            .await?;
+
+        let content = format!(":ping_pong: Pong! ({:?})", curr_time.elapsed());
+
+        ctx.http
+            .update_interaction_original(&self.0.token)?
+            .content(Some(&content))?
             .exec()
             .await?;
 

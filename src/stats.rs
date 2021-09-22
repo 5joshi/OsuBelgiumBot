@@ -38,11 +38,9 @@ pub struct MessageCounters {
 
 pub struct OsuCounters {
     pub rosu: IntCounterVec,
-    pub user_cached: IntCounter,
 }
 
 pub struct CommandCounters {
-    pub message_commands: IntCounterVec,
     pub slash_commands: IntCounterVec,
 }
 
@@ -119,22 +117,9 @@ impl BotStats {
                 other_bot_messages: msg_counter.with_label_values(&["Bot"]),
                 own_messages: msg_counter.with_label_values(&["Own"]),
             },
-            command_counts: CommandCounters {
-                message_commands,
-                slash_commands,
-            },
-            osu_metrics: OsuCounters {
-                user_cached: osu_metrics.with_label_values(&["User cached"]),
-                rosu: osu_metrics,
-            },
+            command_counts: CommandCounters { slash_commands },
+            osu_metrics: OsuCounters { rosu: osu_metrics },
         }
-    }
-
-    pub fn increment_message_command(&self, cmd: &str) {
-        self.command_counts
-            .message_commands
-            .with_label_values(&[cmd])
-            .inc();
     }
 
     pub fn increment_slash_command(&self, cmd: &str) {
@@ -142,9 +127,5 @@ impl BotStats {
             .slash_commands
             .with_label_values(&[cmd])
             .inc();
-    }
-
-    pub fn inc_cached_user(&self) {
-        self.osu_metrics.user_cached.inc();
     }
 }

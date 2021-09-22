@@ -1,3 +1,4 @@
+use chrono::ParseError;
 use irc::error::Error as IrcError;
 use rosu_v2::prelude::OsuError;
 use sqlx::migrate::MigrateError;
@@ -5,7 +6,7 @@ use sqlx::Error as SqlError;
 use std::error::Error as StdError;
 use std::fmt;
 use twilight_gateway::cluster::{ClusterCommandError, ClusterStartError};
-use twilight_http::request::application::InteractionError;
+use twilight_http::request::application::{InteractionError, UpdateOriginalResponseError};
 use twilight_http::request::prelude::create_message::CreateMessageError;
 use twilight_http::response::DeserializeBodyError;
 use twilight_http::Error as TwilightHttpError;
@@ -25,9 +26,11 @@ pub enum Error {
     Migration { src: MigrateError },
     MissingSlashAuthor,
     Osu { src: OsuError },
+    ParseTime { src: ParseError },
     Sql { src: SqlError },
     TwilightHttp { src: TwilightHttpError },
     UnknownInteraction { command: Box<ApplicationCommand> },
+    UpdateOriginalResponse { src: UpdateOriginalResponseError },
 }
 
 impl fmt::Display for Error {
@@ -42,6 +45,7 @@ impl fmt::Display for Error {
             Error::Migration { .. } => f.write_str("Failed to migrate database."),
             Error::MissingSlashAuthor => f.write_str("Slash author was not found."),
             Error::Osu { .. } => f.write_str("Failed to communicate with osu! API."),
+            Error::ParseTime { .. } => f.write_str("Failed to parse timestamp with chrono."),
             Error::Sql { .. } => f.write_str("Error caused by database."),
             Error::TwilightHttp { .. } => f.write_str("Error while using Twilight HTTP."),
             Error::UnknownInteraction { command } => {
@@ -50,6 +54,9 @@ impl fmt::Display for Error {
                     "Received unknown interaction ({}): {:#?}",
                     command.data.name, command
                 )
+            }
+            Error::UpdateOriginalResponse { .. } => {
+                f.write_str("Error while updating original response.")
             }
         }
     }
@@ -65,11 +72,13 @@ impl StdError for Error {
             Error::Interaction { src } => Some(src),
             Error::Irc { src } => Some(src),
             Error::Osu { src } => Some(src),
+            Error::ParseTime { src } => Some(src),
             Error::Migration { src } => Some(src),
             Error::MissingSlashAuthor => None,
             Error::Sql { src } => Some(src),
             Error::TwilightHttp { src } => Some(src),
             Error::UnknownInteraction { .. } => None,
+            Error::UpdateOriginalResponse { src } => Some(src),
         }
     }
 }
@@ -122,6 +131,12 @@ impl From<OsuError> for Error {
     }
 }
 
+impl From<ParseError> for Error {
+    fn from(src: ParseError) -> Self {
+        Self::ParseTime { src }
+    }
+}
+
 impl From<SqlError> for Error {
     fn from(src: SqlError) -> Self {
         Self::Sql { src }
@@ -131,5 +146,11 @@ impl From<SqlError> for Error {
 impl From<TwilightHttpError> for Error {
     fn from(src: TwilightHttpError) -> Self {
         Self::TwilightHttp { src }
+    }
+}
+
+impl From<UpdateOriginalResponseError> for Error {
+    fn from(src: UpdateOriginalResponseError) -> Self {
+        Self::UpdateOriginalResponse { src }
     }
 }

@@ -1,0 +1,8 @@
+[21-09-21 10:34:45] INFO  [twilight_gateway_queue:137] shard 0/1 waiting for allowance 
+[21-09-21 10:34:45] INFO  [src\main.rs:136] guild: [Command { application_id: Some(ApplicationId(719945561033277465)), guild_id: Some(GuildId(297072529426612224)), name: "ping", default_permission: Some(true), description: "Play ping pong with the bot UWU", id: Some(CommandId(889592418645708842)), options: [] }]
+[21-09-21 10:34:45] INFO  [src\main.rs:143] global: []
+[21-09-21 10:34:46] INFO  [src\main.rs:230] Shard 0 is connecting...
+[21-09-21 10:34:46] INFO  [src\main.rs:232] Shard 0 is identifying...
+[21-09-21 10:34:46] INFO  [src\main.rs:229] Shard 0 is connected
+[21-09-21 10:34:46] INFO  [src\main.rs:210] Shard 0 is ready
+[21-09-21 10:34:46] INFO  [src\main.rs:216] Game is set for shard 0
