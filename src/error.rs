@@ -1,6 +1,7 @@
 use chrono::ParseError;
 use irc::error::Error as IrcError;
 use rosu_v2::prelude::OsuError;
+use songbird::error::JoinError;
 use sqlx::migrate::MigrateError;
 use sqlx::Error as SqlError;
 use std::error::Error as StdError;
@@ -25,6 +26,7 @@ pub enum Error {
     DeserializeBody { src: DeserializeBodyError },
     Interaction { src: InteractionError },
     Irc { src: IrcError },
+    JoinVoicechat { src: JoinError },
     Migration { src: MigrateError },
     MissingSlashAuthor,
     Osu { src: OsuError },
@@ -45,6 +47,7 @@ impl fmt::Display for Error {
             Error::DeserializeBody { .. } => f.write_str("Failed to deserialize Discord object."),
             Error::Interaction { .. } => f.write_str("Failed to interact with Discord."),
             Error::Irc { .. } => f.write_str("Failed to communicate with osu! IRC."),
+            Error::JoinVoicechat { .. } => f.write_str("Failed to join discord voicechat."),
             Error::Migration { .. } => f.write_str("Failed to migrate database."),
             Error::MissingSlashAuthor => f.write_str("Slash author was not found."),
             Error::Osu { .. } => f.write_str("Failed to communicate with osu! API."),
@@ -75,6 +78,7 @@ impl StdError for Error {
             Error::DeserializeBody { src } => Some(src),
             Error::Interaction { src } => Some(src),
             Error::Irc { src } => Some(src),
+            Error::JoinVoicechat { src } => Some(src),
             Error::Osu { src } => Some(src),
             Error::ParseTime { src } => Some(src),
             Error::Migration { src } => Some(src),
@@ -120,6 +124,12 @@ impl From<InteractionError> for Error {
 impl From<IrcError> for Error {
     fn from(src: IrcError) -> Self {
         Self::Irc { src }
+    }
+}
+
+impl From<JoinError> for Error {
+    fn from(src: JoinError) -> Self {
+        Self::JoinVoicechat { src }
     }
 }
 

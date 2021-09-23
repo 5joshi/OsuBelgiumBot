@@ -1,6 +1,8 @@
 mod builders;
 mod datetime;
 mod ext;
+pub mod matcher;
+pub mod numbers;
 
 pub use builders::author::Author;
 pub use builders::embed::EmbedBuilder;

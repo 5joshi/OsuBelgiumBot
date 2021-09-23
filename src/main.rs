@@ -21,7 +21,6 @@ mod osu_irc;
 mod stats;
 mod utils;
 
-use async_trait::async_trait;
 use context::Context;
 use dashmap::DashSet;
 use database::Database;
@@ -48,6 +47,9 @@ use crate::commands::handle_interaction;
 
 #[macro_use]
 extern crate async_trait;
+
+#[macro_use]
+extern crate lazy_static;
 
 #[macro_use]
 extern crate log;
@@ -81,7 +83,8 @@ async fn async_main() -> BotResult<()> {
         | Intents::GUILD_MESSAGES
         | Intents::GUILD_MESSAGE_REACTIONS
         | Intents::DIRECT_MESSAGES
-        | Intents::DIRECT_MESSAGE_REACTIONS;
+        | Intents::DIRECT_MESSAGE_REACTIONS
+        | Intents::GUILD_VOICE_STATES;
 
     let ignore_flags = EventTypeFlags::BAN_ADD
         | EventTypeFlags::BAN_REMOVE
@@ -100,11 +103,9 @@ async fn async_main() -> BotResult<()> {
         | EventTypeFlags::STAGE_INSTANCE_DELETE
         | EventTypeFlags::STAGE_INSTANCE_UPDATE
         | EventTypeFlags::TYPING_START
-        | EventTypeFlags::VOICE_SERVER_UPDATE
-        | EventTypeFlags::VOICE_STATE_UPDATE
         | EventTypeFlags::WEBHOOKS_UPDATE;
 
-    let (cluster, mut events) = Cluster::builder(token, intents)
+    let (cluster, events) = Cluster::builder(token, intents)
         .event_types(EventTypeFlags::all() - ignore_flags)
         .http_client(http.clone())
         .build()
@@ -113,7 +114,7 @@ async fn async_main() -> BotResult<()> {
 
     let songbird = Songbird::twilight(cluster.clone(), user_id);
     let cache = InMemoryCache::builder()
-        .resource_types(ResourceType::VOICE_STATE)
+        .resource_types(ResourceType::CHANNEL | ResourceType::GUILD | ResourceType::VOICE_STATE)
         .build();
 
     let database_url =
@@ -128,13 +129,14 @@ async fn async_main() -> BotResult<()> {
         env::var("OSU_CLIENT_SECRET").expect("Missing environment variable (OSU_CLIENT_SECRET).");
 
     let commands = commands::twilight_commands();
-    let guild_id = if cfg!(debug_assertions) {
-        GuildId(297072529426612224)
-    } else {
-        GuildId(277469642908237826)
-    };
 
-    http.set_guild_commands(guild_id, &commands)?.exec().await?;
+    http.set_guild_commands(GuildId(297072529426612224), &commands)?
+        .exec()
+        .await?;
+    http.set_guild_commands(GuildId(277469642908237826), &commands)?
+        .exec()
+        .await?;
+
     http.set_global_commands(&[])?.exec().await?;
 
     let osu = Osu::new(client_id, client_secret).await?;
@@ -177,6 +179,7 @@ async fn async_main() -> BotResult<()> {
 async fn event_loop(ctx: Arc<Context>, mut events: Events) {
     while let Some((shard_id, event)) = events.next().await {
         ctx.cache.update(&event);
+        ctx.songbird.process(&event).await;
         ctx.standby.process(&event);
         let ctx = Arc::clone(&ctx);
 

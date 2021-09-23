@@ -17,6 +17,7 @@ flexi_logger = { version = "0.19", default-features = false, features = [
 futures = "0.3.17"
 hashbrown = "0.11"
 irc = "0.15"
+lazy_static = "1.4.0"
 log = "0.4.0"
 once_cell = "1.4"
 parking_lot = { version = "0.11", default-features = false, features = [
@@ -24,6 +25,7 @@ parking_lot = { version = "0.11", default-features = false, features = [
 ] }
 prometheus = "0.12"
 rand = "0.8.4"
+regex = "1.5.4"
 rosu-v2 = { version = "0.2", features = ["cache", "metrics"] }
 slash_command_macro = { path = "./slash_command_macro" }
 songbird = { version = "0.2.0", default-features = false, features = [

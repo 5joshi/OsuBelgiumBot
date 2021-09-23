@@ -1,8 +1,5 @@
-use std::borrow::Cow;
-
 use chrono::{DateTime, Duration, Utc};
-use futures::{Stream, StreamExt, TryStreamExt};
-use hashbrown::HashMap;
+use futures::StreamExt;
 use sqlx::Row;
 use twilight_model::{channel::Message, id::ChannelId};
 

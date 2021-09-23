@@ -1,6 +1,8 @@
 use std::borrow::Cow;
 use twilight_model::{application::component::Component, channel::embed::Embed};
 
+use crate::utils::RED;
+
 use super::embed::EmbedBuilder;
 
 #[derive(Default)]
@@ -28,6 +30,13 @@ impl<'c> MessageBuilder<'c> {
         self
     }
 
+    pub fn error(mut self, embed: impl IntoEmbed) -> Self {
+        self.embed.replace(embed.into_embed());
+        self.embed.as_mut().map(|e| e.color = Some(RED));
+
+        self
+    }
+
     pub fn file(mut self, name: &'static str, data: &'c [u8]) -> Self {
         self.file.replace((name, data));
 
@@ -50,6 +59,12 @@ impl<'c> From<Embed> for MessageBuilder<'c> {
             file: None,
             components: None,
         }
+    }
+}
+
+impl<'c> From<EmbedBuilder> for MessageBuilder<'c> {
+    fn from(builder: EmbedBuilder) -> Self {
+        builder.build().into()
     }
 }
 

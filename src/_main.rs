@@ -40,7 +40,6 @@ fn spawn(
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     dotenv::dotenv().ok();
-    env_logger::init();
 
     // Initialize the tracing subscriber.
     let (mut events, state) = {

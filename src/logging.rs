@@ -1,5 +1,7 @@
 use flexi_logger::{
-    Age, Cleanup, Criterion, DeferredNow, Duplicate, FileSpec, Logger, LoggerHandle, Naming,
+    filter::{LogLineFilter, LogLineWriter},
+    Age, Cleanup, Criterion, DeferredNow, Duplicate, FileSpec, LogSpecification, Logger,
+    LoggerHandle, Naming,
 };
 use log::Record;
 use once_cell::sync::OnceCell;
@@ -7,11 +9,27 @@ use std::io::{Result as IoResult, Write};
 
 static LOGGER: OnceCell<LoggerHandle> = OnceCell::new();
 
+pub struct GoodCratesOnly;
+impl LogLineFilter for GoodCratesOnly {
+    fn write(
+        &self,
+        now: &mut DeferredNow,
+        record: &log::Record,
+        log_line_writer: &dyn LogLineWriter,
+    ) -> std::io::Result<()> {
+        if !(record.target().contains("songbird") || record.target().contains("tracing")) {
+            log_line_writer.write(now, record)?;
+        }
+        Ok(())
+    }
+}
+
 pub fn initialize() {
     let file_spec = FileSpec::default().directory("logs");
 
     let logger_handle = Logger::try_with_str("osubelgiumbot")
         .unwrap()
+        .filter(Box::new(GoodCratesOnly))
         .log_to_file(file_spec)
         .format(log_format)
         .format_for_files(log_format_files)

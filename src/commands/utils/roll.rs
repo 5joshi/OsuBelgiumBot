@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::Instant};
+use std::sync::Arc;
 
 use rand::Rng;
 use twilight_model::application::{
@@ -23,7 +23,7 @@ pub struct RollArgs {
 }
 
 impl RollArgs {
-    async fn parse_options(ctx: Arc<Context>, data: CommandData) -> BotResult<Self> {
+    async fn parse_options(_: Arc<Context>, data: CommandData) -> BotResult<Self> {
         let mut limit: u64 = 100;
         for option in data.options {
             if let CommandDataOption::Integer { name, value } = option {
