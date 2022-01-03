@@ -1,12 +1,18 @@
 use std::sync::Arc;
 
-use songbird::input::{Input, Restartable};
-use twilight_model::application::interaction::ApplicationCommand;
+use songbird::{
+    input::{Input, Restartable},
+    Event, EventContext, EventHandler, TrackEvent,
+};
+use twilight_model::{
+    application::interaction::ApplicationCommand,
+    gateway::presence::{ActivityType, Status},
+};
 
 use crate::{
     context::Context,
     error::BotResult,
-    utils::{matcher, ApplicationCommandExt, MessageBuilder},
+    utils::{matcher, ApplicationCommandExt, EmbedBuilder, MessageBuilder},
 };
 
 pub async fn play(ctx: Arc<Context>, command: ApplicationCommand, song: String) -> BotResult<()> {
@@ -29,7 +35,6 @@ pub async fn play(ctx: Arc<Context>, command: ApplicationCommand, song: String) 
 
     let (_handle, success) = ctx.songbird.join(guild_id, channel_id).await;
 
-    info!("{:?}", _handle.lock().await.current_connection());
     if let Err(success) = success {
         let builder = MessageBuilder::new().error("Failed to join voice channel! Blame Joshi :c");
         let _ = command.update_message(&ctx, builder).await;
@@ -38,7 +43,11 @@ pub async fn play(ctx: Arc<Context>, command: ApplicationCommand, song: String) 
 
     info!(
         "Joined channel {} after play command by {}",
-        channel_id,
+        if let Some(channel) = ctx.cache.guild_channel(channel_id) {
+            channel.name().to_owned()
+        } else {
+            channel_id.to_string()
+        },
         command.username()?
     );
 
@@ -53,23 +62,47 @@ pub async fn play(ctx: Arc<Context>, command: ApplicationCommand, song: String) 
         Ok(song) => {
             let input = Input::from(song);
 
-            let content = format!(
-                "Playing **{:?}** by **{:?}**",
-                input.metadata.track.as_deref().unwrap_or("<UNKNOWN>"),
-                input.metadata.artist.as_deref().unwrap_or("<UNKNOWN>"),
-            );
-
-            info!("{}", content);
-            let builder = MessageBuilder::new().embed(content);
-            command.update_message(&ctx, builder).await?;
-
             if let Some(call_lock) = ctx.songbird.get(guild_id) {
                 let mut call = call_lock.lock().await;
-                let handle = call.play_source(input);
+                let empty = call.queue().is_empty();
 
-                ctx.trackdata.write().replace(handle);
-            } else {
-                error!("cringe digga");
+                let mut metadata_str = match (
+                    &input.metadata.track,
+                    &input.metadata.artist,
+                    &input.metadata.title,
+                ) {
+                    (Some(track), Some(artist), _) => format!("**{} - {}**", artist, track),
+                    (.., Some(title)) => format!("**{}**", title),
+                    _ => "**UNKNOWN**".to_string(),
+                };
+
+                if let Some(url) = &input.metadata.source_url {
+                    metadata_str = format!("[{}]({})", metadata_str, url);
+                }
+
+                let content = format!(
+                    "{}{}{}",
+                    if empty { "Started playing " } else { "Added " },
+                    metadata_str,
+                    if empty { "" } else { " to the queue" },
+                );
+
+                info!("{}", content);
+
+                let mut builder = EmbedBuilder::new().description(content);
+                if let Some(ref thumbnail) = input.metadata.thumbnail {
+                    builder = builder.image(thumbnail);
+                }
+
+                call.enqueue_source(input);
+                call.queue().modify_queue(|q| {
+                    q.back().map(|q| {
+                        q.add_event(Event::Track(TrackEvent::Play), TrackStart(Arc::clone(&ctx)))
+                    })
+                });
+                command.update_message(&ctx, builder).await?;
+
+                // ctx.trackdata.write().replace(handle);
             }
         }
         Err(e) => {
@@ -84,4 +117,32 @@ pub async fn play(ctx: Arc<Context>, command: ApplicationCommand, song: String) 
         }
     }
     Ok(())
+}
+
+struct TrackStart(Arc<Context>);
+
+#[async_trait]
+impl EventHandler for TrackStart {
+    async fn act(&self, ctx: &songbird::EventContext<'_>) -> Option<songbird::Event> {
+        if let EventContext::Track(&[(state, track)]) = ctx {
+            info!("Changing activity");
+
+            let metadata = track.metadata();
+
+            let mut metadata_str = match (&metadata.track, &metadata.artist, &metadata.title) {
+                (Some(track), Some(artist), _) => format!("🎵 {} - {} 🎵", artist, track),
+                (.., Some(title)) => format!("🎵 {} 🎵", title),
+                _ => "🎵 UNKNOWN 🎵".to_string(),
+            };
+            let result = self
+                .0
+                .set_shard_activity(0, Status::Online, ActivityType::Playing, metadata_str)
+                .await;
+
+            if let Err(e) = result {
+                unwind_error!(warn, e, "Failed to set song activity: {}")
+            }
+        }
+        None
+    }
 }

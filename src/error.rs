@@ -2,10 +2,12 @@ use chrono::ParseError;
 use irc::error::Error as IrcError;
 use rosu_v2::prelude::OsuError;
 use songbird::error::JoinError;
+use songbird::tracks::TrackError;
 use sqlx::migrate::MigrateError;
 use sqlx::Error as SqlError;
 use std::error::Error as StdError;
 use std::fmt;
+use std::num::ParseFloatError;
 use twilight_gateway::cluster::{ClusterCommandError, ClusterStartError};
 use twilight_http::request::application::interaction::update_original_response::UpdateOriginalResponseError;
 use twilight_http::request::application::InteractionError;
@@ -30,7 +32,9 @@ pub enum Error {
     Migration { src: MigrateError },
     MissingSlashAuthor,
     Osu { src: OsuError },
+    ParseFloat { src: ParseFloatError },
     ParseTime { src: ParseError },
+    SongbirdTrack { src: TrackError },
     Sql { src: SqlError },
     TwilightHttp { src: TwilightHttpError },
     UnknownInteraction { command: Box<ApplicationCommand> },
@@ -51,7 +55,11 @@ impl fmt::Display for Error {
             Error::Migration { .. } => f.write_str("Failed to migrate database."),
             Error::MissingSlashAuthor => f.write_str("Slash author was not found."),
             Error::Osu { .. } => f.write_str("Failed to communicate with osu! API."),
+            Error::ParseFloat { .. } => f.write_str("Failed to parse float."),
             Error::ParseTime { .. } => f.write_str("Failed to parse timestamp with chrono."),
+            Error::SongbirdTrack { .. } => {
+                f.write_str("Error when using method on songbird track.")
+            }
             Error::Sql { .. } => f.write_str("Error caused by database."),
             Error::TwilightHttp { .. } => f.write_str("Error while using Twilight HTTP."),
             Error::UnknownInteraction { command } => {
@@ -80,9 +88,11 @@ impl StdError for Error {
             Error::Irc { src } => Some(src),
             Error::JoinVoicechat { src } => Some(src),
             Error::Osu { src } => Some(src),
+            Error::ParseFloat { src } => Some(src),
             Error::ParseTime { src } => Some(src),
             Error::Migration { src } => Some(src),
             Error::MissingSlashAuthor => None,
+            Error::SongbirdTrack { src } => Some(src),
             Error::Sql { src } => Some(src),
             Error::TwilightHttp { src } => Some(src),
             Error::UnknownInteraction { .. } => None,
@@ -145,9 +155,21 @@ impl From<OsuError> for Error {
     }
 }
 
+impl From<ParseFloatError> for Error {
+    fn from(src: ParseFloatError) -> Self {
+        Self::ParseFloat { src }
+    }
+}
+
 impl From<ParseError> for Error {
     fn from(src: ParseError) -> Self {
         Self::ParseTime { src }
+    }
+}
+
+impl From<TrackError> for Error {
+    fn from(src: TrackError) -> Self {
+        Self::SongbirdTrack { src }
     }
 }
 

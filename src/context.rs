@@ -1,8 +1,13 @@
+use std::collections::VecDeque;
+use std::sync::Arc;
+
 use crate::{osu_irc::IrcClient, stats::BotStats};
 use crate::{BotResult, Database};
 
 use parking_lot::RwLock;
 use rosu_v2::Osu as OsuClient;
+use songbird::tracks::LoopState;
+use songbird::EventHandler;
 use songbird::{tracks::TrackHandle, Songbird};
 use twilight_cache_inmemory::InMemoryCache;
 use twilight_gateway::Cluster;
@@ -18,7 +23,6 @@ pub struct Context {
     pub irc: IrcClient,
     pub cluster: Cluster,
     pub http: HttpClient,
-    pub trackdata: RwLock<Option<TrackHandle>>,
     pub songbird: Songbird,
     pub standby: Standby,
     pub stats: BotStats,

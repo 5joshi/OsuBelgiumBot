@@ -32,7 +32,7 @@ use parking_lot::RwLock;
 use rosu_v2::Osu;
 use songbird::Songbird;
 use stats::BotStats;
-use std::{env, sync::Arc};
+use std::{collections::VecDeque, env, sync::Arc};
 use twilight_cache_inmemory::{InMemoryCache, ResourceType};
 use twilight_gateway::{cluster::Events, Cluster, Event, EventTypeFlags, Intents};
 use twilight_http::Client as HttpClient;
@@ -43,7 +43,7 @@ use twilight_model::{
 };
 use twilight_standby::Standby;
 
-use crate::commands::handle_interaction;
+use crate::{commands::handle_interaction, utils::SERVER_ID};
 
 #[macro_use]
 extern crate async_trait;
@@ -130,10 +130,7 @@ async fn async_main() -> BotResult<()> {
 
     let commands = commands::twilight_commands();
 
-    http.set_guild_commands(GuildId(297072529426612224), &commands)?
-        .exec()
-        .await?;
-    http.set_guild_commands(GuildId(277469642908237826), &commands)?
+    http.set_guild_commands(GuildId(SERVER_ID), &commands)?
         .exec()
         .await?;
 
@@ -144,7 +141,7 @@ async fn async_main() -> BotResult<()> {
     // TODO: DashSet should contain list of users to track
     let irc = IrcClient::new(DashSet::new());
 
-    let trackdata = RwLock::new(None);
+    // let trackdata = RwLock::new(None);
 
     let standby = Standby::new();
 
@@ -157,7 +154,6 @@ async fn async_main() -> BotResult<()> {
         http,
         irc,
         osu,
-        trackdata,
         songbird,
         standby,
         stats,
@@ -167,11 +163,17 @@ async fn async_main() -> BotResult<()> {
 
     tokio::select! {
         _ = event_loop(Arc::clone(&ctx), events) => {}
-        _ = graceful_shutdown() => {}
+        _ = wait_for_ctrl_c() => {}
     };
 
     info!("Shutting down cluster...");
     ctx.cluster.down();
+
+    info!("Clearing song queue...");
+    if let Some(call) = ctx.songbird.get(SERVER_ID) {
+        let call = call.lock().await;
+        call.queue().stop();
+    }
 
     Ok(())
 }
@@ -191,7 +193,7 @@ async fn event_loop(ctx: Arc<Context>, mut events: Events) {
     }
 }
 
-async fn graceful_shutdown() {
+async fn wait_for_ctrl_c() {
     if let Err(why) = tokio::signal::ctrl_c().await {
         unwind_error!(error, why, "Failed to listen for ctrl-c event. {:?}");
     }

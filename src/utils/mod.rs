@@ -14,6 +14,9 @@ pub use ext::ApplicationCommandExt;
 pub const DARK_GREEN: u32 = 0x1F8B4C;
 pub const RED: u32 = 0xE74C3C;
 
+// Server ID
+pub const SERVER_ID: u64 = 277469642908237826;
+
 // Message field sizes
 pub const DESCRIPTION_SIZE: usize = 2048;
 pub const FIELD_VALUE_SIZE: usize = 1024;

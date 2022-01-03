@@ -29,6 +29,7 @@ regex = "1.5.4"
 rosu-v2 = { version = "0.2", features = ["cache", "metrics"] }
 slash_command_macro = { path = "./slash_command_macro" }
 songbird = { version = "0.2.0", default-features = false, features = [
+    "builtin-queue",
     "driver",
     "twilight-rustls",
     "zlib-stock",
