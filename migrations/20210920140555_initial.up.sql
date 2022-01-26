@@ -5,7 +5,7 @@ CREATE TABLE discord_users (
 
 CREATE TABLE manual_links (
     discord_id INT8 PRIMARY KEY,
-    osu_name VARCHAR(15) NOT NULL
+    osu_id INT8 NOT NULL
 );
 
 CREATE TABLE messages (

@@ -17,6 +17,7 @@ mod context;
 mod database;
 mod error;
 mod logging;
+mod loops;
 mod osu_irc;
 mod stats;
 mod utils;
@@ -43,7 +44,7 @@ use twilight_model::{
 };
 use twilight_standby::Standby;
 
-use crate::{commands::handle_interaction, utils::SERVER_ID};
+use crate::{commands::handle_interaction, loops::background_loop, utils::SERVER_ID};
 
 #[macro_use]
 extern crate async_trait;
@@ -130,7 +131,7 @@ async fn async_main() -> BotResult<()> {
 
     let commands = commands::twilight_commands();
 
-    http.set_guild_commands(GuildId(SERVER_ID), &commands)?
+    http.set_guild_commands(SERVER_ID, &commands)?
         .exec()
         .await?;
 
@@ -160,6 +161,9 @@ async fn async_main() -> BotResult<()> {
     };
 
     let ctx = Arc::new(ctx);
+
+    tokio::spawn(background_loop(Arc::clone(&ctx)));
+    // tokio::spawn(osu_tracking(Arc::clone(&ctx)));
 
     tokio::select! {
         _ = event_loop(Arc::clone(&ctx), events) => {}
