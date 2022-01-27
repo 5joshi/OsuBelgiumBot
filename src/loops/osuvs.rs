@@ -1,7 +1,4 @@
-// use crate::{
-//     commands::osuvs::{map_end, map_start},
-//     Irc, MySQL, Osu,
-// };
+// use crate::commands::osuvs::{map_end, map_start};
 
 // use chrono::{DateTime, Duration as ChronoDuration, Utc};
 // use futures::{
@@ -10,10 +7,6 @@
 // };
 // use itertools::Itertools;
 // use rosu_v2::prelude::{GameMode, GameMods, Grade, Score};
-// use serenity::{
-//     http::Http,
-//     prelude::{RwLock, TypeMap},
-// };
 // use std::{collections::HashMap, sync::Arc};
 // use tokio::time::{interval, Duration};
 

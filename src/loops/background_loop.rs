@@ -15,12 +15,12 @@ const CTB_TOP_COUNT: usize = 5;
 
 pub async fn background_loop(ctx: Arc<Context>) {
     // Once per day
-    let mut interval = interval(TokioDuration::from_secs(60 * 60 * 24));
+    let mut interval = interval(TokioDuration::from_secs(60)); //* 60 * 24));
     interval.tick().await;
 
     loop {
         interval.tick().await;
-        top_role(&ctx).await;
+        // top_role(&ctx).await;
         not_checked_role(&ctx).await;
         info!("Handled unchecked members and top role distribution");
     }
@@ -156,7 +156,8 @@ async fn not_checked_role(ctx: &Context) {
                             "Kicking member <@!{user_id}> for being unchecked after {day_limit} days",
                         );
                         let embed = EmbedBuilder::new().description(content).build();
-                        ctx.http
+                        let _ = ctx
+                            .http
                             .create_message(APPROVE_CHANNEL)
                             .embeds(&[embed])
                             .unwrap()

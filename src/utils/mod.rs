@@ -1,5 +1,6 @@
 mod builders;
 mod datetime;
+pub mod discord;
 mod ext;
 pub mod matcher;
 pub mod numbers;
@@ -19,11 +20,13 @@ pub const RED: u32 = 0xE74C3C;
 pub const SERVER_ID: GuildId = GuildId(277469642908237826);
 
 // Channel IDs
+pub const GENERAL_CHANNEL: ChannelId = ChannelId(277469642908237826);
 pub const YOUTUBE_REQUEST_CHANNEL: ChannelId = ChannelId(732257710283685948);
 pub const OSUVS_CHANNEL: ChannelId = ChannelId(748683685204721729);
 pub const APPROVE_CHANNEL: ChannelId = ChannelId(438410203977744394);
 
 // Role IDs
+pub const OSU_ROLE_ID: RoleId = RoleId(277473888173162497);
 pub const UNCHECKED_ROLE_ID: RoleId = RoleId(326390404620746752);
 pub const TOP_ROLE_ID: RoleId = RoleId(438450781142908929);
 pub const VC_ROLE_ID: RoleId = RoleId(673633138207096833);

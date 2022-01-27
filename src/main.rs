@@ -43,8 +43,15 @@ use twilight_model::{
     id::GuildId,
 };
 use twilight_standby::Standby;
+use utils::{
+    discord::user_avatar, EmbedBuilder, APPROVE_CHANNEL, OSU_ROLE_ID, UNCHECKED_ROLE_ID, VC_ROLE_ID,
+};
 
-use crate::{commands::handle_interaction, loops::background_loop, utils::SERVER_ID};
+use crate::{
+    commands::handle_interaction,
+    loops::background_loop,
+    utils::{GENERAL_CHANNEL, SERVER_ID},
+};
 
 #[macro_use]
 extern crate async_trait;
@@ -242,7 +249,70 @@ async fn handle_event(ctx: Arc<Context>, event: Event, shard_id: u64) -> BotResu
                 ),
             }
         }
-        Event::MessageCreate(e) => ctx.database.insert_message(&(*e).0).await.map(|_| ())?,
+        Event::MemberAdd(m) => {
+            debug!("{:?}", m);
+            let content = format!(
+                "<@!{}> just joined the server, awaiting approval owo",
+                m.user.id
+            );
+            let embed = EmbedBuilder::new().description(content).build();
+            let _ = ctx
+                .http
+                .create_message(APPROVE_CHANNEL)
+                .embeds(&[embed])?
+                .exec()
+                .await;
+
+            let req = ctx
+                .http
+                .add_guild_member_role(SERVER_ID, m.user.id, UNCHECKED_ROLE_ID)
+                .exec()
+                .await;
+
+            if let Err(why) = req {
+                unwind_error!(error, why, "Could not add 'Not Checked' role to member: {}");
+            } else {
+                info!("Added 'Not Checked' role to member {}", m.user.name);
+            }
+
+            ctx.database.insert_unchecked_member(m.user.id).await?;
+
+            let req = ctx
+                .http
+                .add_guild_member_role(SERVER_ID, m.user.id, OSU_ROLE_ID)
+                .exec()
+                .await;
+
+            if let Err(why) = req {
+                unwind_error!(error, why, "Could not add 'osu' role to member: {}");
+            } else {
+                info!("Added 'osu' role to member {}", m.user.name);
+            }
+        }
+        Event::MemberRemove(m) => {
+            ctx.database.remove_unchecked_member(m.user.id).await?;
+        }
+        Event::MemberUpdate(m) => {
+            debug!("{:?}", m);
+            if !m.roles.contains(&UNCHECKED_ROLE_ID) {
+                if ctx.database.remove_unchecked_member(m.user.id).await? {
+                    let content = format!("**Welcome <@!{}>!\n\nSay hi, or else...**", m.user.id);
+                    let embed = EmbedBuilder::new()
+                        .description(content)
+                        .thumbnail(user_avatar(&m.user))
+                        .build();
+                    let _ = ctx
+                        .http
+                        .create_message(GENERAL_CHANNEL)
+                        .embeds(&[embed])?
+                        .exec()
+                        .await;
+                };
+            }
+        }
+        Event::MessageCreate(e) => {
+            ctx.database.insert_message(&(*e).0).await?;
+        }
         Event::Resumed => info!("Shard {} is resumed", shard_id),
         Event::RoleCreate(_) => ctx.stats.event_counts.role_create.inc(),
         Event::RoleDelete(_) => ctx.stats.event_counts.role_delete.inc(),
@@ -253,7 +323,87 @@ async fn handle_event(ctx: Arc<Context>, event: Event, shard_id: u64) -> BotResu
         Event::ShardIdentifying(_) => info!("Shard {} is identifying...", shard_id),
         Event::ShardReconnecting(_) => info!("Shard {} is reconnecting...", shard_id),
         Event::ShardResuming(_) => info!("Shard {} is resuming...", shard_id),
-        _ => {}
+        Event::VoiceStateUpdate(v) => {
+            let user = match v.0.member {
+                Some(member) => member.user,
+                None => return Ok(()),
+            };
+
+            match v.0.channel_id {
+                Some(_) => {
+                    let req = ctx
+                        .http
+                        .add_guild_member_role(SERVER_ID, user.id, VC_ROLE_ID)
+                        .exec()
+                        .await;
+
+                    if let Err(why) = req {
+                        unwind_error!(error, why, "Could not add 'VC' role to member: {}");
+                    } else {
+                        info!("Added 'VC' role to member {}", user.name);
+                    }
+                }
+                None => {
+                    let req = ctx
+                        .http
+                        .remove_guild_member_role(SERVER_ID, user.id, VC_ROLE_ID)
+                        .exec()
+                        .await;
+
+                    if let Err(why) = req {
+                        unwind_error!(error, why, "Could not remove VC role from member: {}");
+                    } else {
+                        info!("Removed 'VC' role from member {}", user.name);
+                    }
+                }
+            }
+        }
+
+        Event::BanAdd(_) => {}
+        Event::BanRemove(_) => {}
+        Event::ChannelCreate(_) => {}
+        Event::ChannelDelete(_) => {}
+        Event::ChannelPinsUpdate(_) => {}
+        Event::ChannelUpdate(_) => {}
+        Event::GatewayHeartbeat(_) => {}
+        Event::GatewayHeartbeatAck => {}
+        Event::GatewayHello(_) => {}
+        Event::GiftCodeUpdate => {}
+        Event::GuildCreate(_) => {}
+        Event::GuildDelete(_) => {}
+        Event::GuildEmojisUpdate(_) => {}
+        Event::GuildIntegrationsUpdate(_) => {}
+        Event::GuildUpdate(_) => {}
+        Event::IntegrationCreate(_) => {}
+        Event::IntegrationDelete(_) => {}
+        Event::IntegrationUpdate(_) => {}
+        Event::InviteCreate(_) => {}
+        Event::InviteDelete(_) => {}
+        Event::MemberChunk(_) => {}
+        Event::MessageDelete(_) => {}
+        Event::MessageDeleteBulk(_) => {}
+        Event::MessageUpdate(_) => {}
+        Event::PresenceUpdate(_) => {}
+        Event::PresencesReplace => {}
+        Event::ReactionAdd(_) => {}
+        Event::ReactionRemove(_) => {}
+        Event::ReactionRemoveAll(_) => {}
+        Event::ReactionRemoveEmoji(_) => {}
+        Event::ShardPayload(_) => {}
+        Event::StageInstanceCreate(_) => {}
+        Event::StageInstanceDelete(_) => {}
+        Event::StageInstanceUpdate(_) => {}
+        Event::ThreadCreate(_) => {}
+        Event::ThreadDelete(_) => {}
+        Event::ThreadListSync(_) => {}
+        Event::ThreadMemberUpdate(_) => {}
+        Event::ThreadMembersUpdate(_) => {}
+        Event::ThreadUpdate(_) => {}
+        Event::TypingStart(_) => {}
+        Event::UnavailableGuild(_) => {}
+        Event::UserUpdate(_) => {}
+        Event::VoiceServerUpdate(_) => {}
+        Event::WebhooksUpdate(_) => {}
     }
     Ok(())
 }

@@ -21,7 +21,7 @@ pub async fn volume(ctx: Arc<Context>, command: ApplicationCommand, volume: f32)
             }
         };
 
-        handle.set_volume(volume);
+        let _ = handle.set_volume(volume);
 
         let content = format!("Changed volume to {}!", volume);
         let builder = MessageBuilder::new().embed(content);
