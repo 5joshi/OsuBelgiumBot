@@ -1,9 +1,10 @@
-use super::Base;
+use std::convert::TryFrom;
 
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::{format_ident, quote, ToTokens};
-use std::convert::TryFrom;
 use syn::{parse_quote, Error as SynError, Ident, Lit, LitStr, Meta, Result as SynResult};
+
+use super::Base;
 
 pub struct Command {
     name: Ident,
@@ -12,6 +13,7 @@ pub struct Command {
     run_name: Ident,
     args_name: Option<Ident>,
     options_name: Option<Ident>,
+    only_guilds: bool,
 }
 
 impl TryFrom<Base> for Command {
@@ -23,17 +25,25 @@ impl TryFrom<Base> for Command {
         let mut run_name = None;
         let mut args_name = None;
         let mut options_name = None;
+        let mut only_guilds = None;
 
         for attr in base.attributes {
             match attr.parse_meta()? {
-                Meta::Path(m) => {
-                    let message = r#"attribute must be of the form `#[... = "..."]`"#;
-                    let span = m.get_ident().map_or_else(Span::call_site, Ident::span);
+                Meta::Path(m) => match m.get_ident() {
+                    Some(ident) if ident == &format_ident!("only_guilds") => {
+                        only_guilds = Some(true)
+                    }
+                    _ => {
+                        let message =
+                            r#"attribute must be of the form `#[... = "..."]` or `#[only_guilds]`"#;
+                        let span = m.get_ident().map_or_else(Span::call_site, Ident::span);
 
-                    return Err(SynError::new(span, message));
-                }
+                        return Err(SynError::new(span, message));
+                    }
+                },
                 Meta::List(m) => {
-                    let message = r#"attribute must be of the form `#[... = "..."]`"#;
+                    let message =
+                        r#"attribute must be of the form `#[... = "..."]` or `#[only_guilds]`"#;
                     let span = m.path.get_ident().map_or_else(Span::call_site, Ident::span);
 
                     return Err(SynError::new(span, message));
@@ -108,6 +118,7 @@ impl TryFrom<Base> for Command {
             run_name,
             args_name,
             options_name,
+            only_guilds: only_guilds.unwrap_or(false),
         };
 
         Ok(command)
@@ -123,6 +134,7 @@ impl ToTokens for Command {
             run_name,
             args_name,
             options_name,
+            only_guilds,
         } = self;
 
         let fut_name = format_ident!("{}Future", name);
@@ -144,6 +156,7 @@ impl ToTokens for Command {
 
             impl #name {
                 pub const NAME: &'static str = #cmd_name;
+                const ONLY_GUILDS: bool = #only_guilds;
             }
         };
 
@@ -193,6 +206,19 @@ impl ToTokens for Command {
                     pub fn run(ctx: ::std::sync::Arc<crate::Context>, mut command: ::twilight_model::application::interaction::ApplicationCommand) -> #fut_name<'static> {
                         use futures::TryFutureExt;
 
+                        if Self::ONLY_GUILDS && command.guild_id.is_none() {
+                            use crate::utils::ApplicationCommandExt;
+
+                            let fut = async move {
+                                let builder = crate::utils::MessageBuilder::new().error("This command is not available in DMs");
+                                command.create_message(&ctx, builder).await?;
+
+                                Ok(())
+                            };
+
+                            return #fut_name { fut: Box::pin(fut) };
+                        }
+
                         let data = ::std::mem::take(&mut command.data);
 
                         let fut = #args_name::parse_options(Arc::clone(&ctx), data)
@@ -212,6 +238,19 @@ impl ToTokens for Command {
                 impl #name {
                     pub fn run(ctx: ::std::sync::Arc<crate::Context>, command: ::twilight_model::application::interaction::ApplicationCommand) -> #fut_name<'static> {
                         use futures::TryFutureExt;
+
+                        if Self::ONLY_GUILDS && command.guild_id.is_none() {
+                            use crate::utils::ApplicationCommandExt;
+
+                            let fut = async move {
+                                let builder = crate::utils::MessageBuilder::new().error("This command is not available in DMs");
+                                command.create_message(&ctx, builder).await?;
+
+                                Ok(())
+                            };
+
+                            return #fut_name { fut: Box::pin(fut) };
+                        }
 
                         let fut = #run_name(ctx, command)
                             .map_err(Box::new)

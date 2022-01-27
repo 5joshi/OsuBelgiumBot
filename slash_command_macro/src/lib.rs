@@ -21,6 +21,7 @@ use syn::{
 /// - `#[options = "..."]` for the function name that returns the command options as `Vec<CommandOption>`.
 /// If none is specified the defined command won't have options.
 /// - `#[run = "..."` for the function name that runs the command. Defaults to the lowercase struct name.
+/// - `#[only_guilds]` to mark commands as disabled in DMs
 ///
 /// For a given command struct `C` this macro enables:
 /// - `C::NAME -> &'static str` for the command name
@@ -51,6 +52,7 @@ use syn::{
 /// #[name = "roll_command"]
 /// #[options = "roll_options"]
 /// #[run = "my_roll_fn"]
+/// #[only_guilds]
 /// pub struct Roll;
 ///
 /// struct RollArgs { limit: u64 }
