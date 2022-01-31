@@ -6,6 +6,7 @@ use twilight_model::{channel::Message, id::ChannelId};
 use crate::{commands::MessageActivity, database::Database, error::BotResult};
 
 impl Database {
+    //? Do I need bool return type
     pub async fn insert_message(&self, message: &Message) -> BotResult<bool> {
         let query = sqlx::query!(
             "INSERT INTO messages (id, channel_id, author, content, timestamp, bot) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (id) DO NOTHING;",

@@ -26,6 +26,7 @@ impl Database {
         Ok(result.rows_affected() == 1)
     }
 
+    //? Do I need bool return type
     pub async fn remove_unchecked_member(&self, user_id: UserId) -> BotResult<bool> {
         let query = sqlx::query!(
             "DELETE FROM unchecked_members WHERE user_id = $1;",

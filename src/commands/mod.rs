@@ -1,6 +1,6 @@
 mod message;
 mod music;
-mod osu;
+mod osuvs;
 mod utils;
 
 use std::sync::Arc;

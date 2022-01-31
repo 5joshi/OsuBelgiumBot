@@ -4,6 +4,7 @@ pub mod discord;
 mod ext;
 pub mod matcher;
 pub mod numbers;
+pub mod osu;
 
 pub use builders::author::Author;
 pub use builders::embed::EmbedBuilder;

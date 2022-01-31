@@ -37,10 +37,9 @@ CREATE TABLE osuvs_maps (
 CREATE TABLE osuvs_scores (
     beatmap_id INT4 NOT NULL,
     user_id INT4 NOT NULL,
-    mods INT4 NOT NULL,
     score JSON NOT NULL,
     FOREIGN KEY (beatmap_id) REFERENCES osuvs_maps(beatmap_id),
-    PRIMARY KEY (beatmap_id, user_id, mods)
+    PRIMARY KEY (beatmap_id, user_id)
 );
 
 CREATE INDEX osuvs_scores_map_id ON osuvs_scores (beatmap_id);
