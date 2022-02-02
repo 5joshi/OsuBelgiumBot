@@ -49,7 +49,7 @@ use utils::{
 
 use crate::{
     commands::handle_interaction,
-    loops::background_loop,
+    loops::{background_loop, osu_tracking},
     utils::{GENERAL_CHANNEL, SERVER_ID},
 };
 
@@ -170,7 +170,7 @@ async fn async_main() -> BotResult<()> {
     let ctx = Arc::new(ctx);
 
     tokio::spawn(background_loop(Arc::clone(&ctx)));
-    // tokio::spawn(osu_tracking(Arc::clone(&ctx)));
+    tokio::spawn(osu_tracking(Arc::clone(&ctx)));
 
     tokio::select! {
         _ = event_loop(Arc::clone(&ctx), events) => {}

@@ -26,8 +26,8 @@ pub enum OsuVSArgs {
     Info,
     Leaderboard,
     RequestList,
-    Request(Result<u32, &'static str>),
-    Start(Result<u32, &'static str>),
+    Request(Option<u32>),
+    Start(Option<u32>),
 }
 
 impl OsuVSArgs {
@@ -52,8 +52,7 @@ impl OsuVSArgs {
         for option in options {
             if let CommandDataOption::String { name, value } = option {
                 if name == "map" {
-                    let map_id =
-                        get_osu_map_id(&value).ok_or("No map ID found in osuvs request argument");
+                    let map_id = get_osu_map_id(&value);
                     return Ok(Self::Request(map_id));
                 }
             }
@@ -66,8 +65,7 @@ impl OsuVSArgs {
         for option in options {
             if let CommandDataOption::String { name, value } = option {
                 if name == "map" {
-                    let map_id =
-                        get_osu_map_id(&value).ok_or("No map ID found in osuvs start argument");
+                    let map_id = get_osu_map_id(&value);
                     return Ok(Self::Start(map_id));
                 }
             }

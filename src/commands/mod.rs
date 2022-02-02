@@ -10,6 +10,7 @@ use twilight_model::application::{command::Command, interaction::ApplicationComm
 use utils::{Ping, Roll};
 
 use crate::{
+    commands::osuvs::OsuVS,
     context::Context,
     error::{BotResult, Error},
     utils::ApplicationCommandExt,
@@ -23,7 +24,7 @@ pub fn twilight_commands() -> Vec<Command> {
         Ping::define(),
         Roll::define(),
         Activity::define(),
-        Music::define(),
+        OsuVS::define(),
     ]
 }
 
@@ -54,9 +55,9 @@ pub async fn handle_interaction(ctx: Arc<Context>, command: ApplicationCommand) 
 
     match name {
         Activity::NAME => Activity::run(ctx, command).await,
-        Music::NAME => Music::run(ctx, command).await,
         Ping::NAME => Ping::run(ctx, command).await,
         Roll::NAME => Roll::run(ctx, command).await,
+        OsuVS::NAME => OsuVS::run(ctx, command).await,
         _ => Err(Error::UnknownInteraction {
             command: Box::new(command),
         }),

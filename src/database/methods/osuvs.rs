@@ -30,7 +30,7 @@ impl Database {
     }
 
     // Return a HashMap mapping user ids to HashMaps mapping mods to scores
-    pub async fn get_osuvs_highscores(&self) -> BotResult<HashMap<u32, Score>> {
+    pub async fn get_osuvs_highscores(&self, count: usize) -> BotResult<Vec<(u32, Score)>> {
         let map_id = self.get_curr_osuvs_map().await.map(|t| t.0);
         match map_id {
             Some(id) => {
@@ -45,9 +45,16 @@ impl Database {
 
                     scores.insert(user_id, serde_json::from_value(score)?);
                 }
-                return Ok(scores);
+                let mut highscores: Vec<_> = scores.into_iter().collect();
+                highscores.sort_unstable_by(|(_, s1), (_, s2)| {
+                    s2.score
+                        .cmp(&s1.score)
+                        .then_with(|| s1.created_at.cmp(&s2.created_at))
+                });
+                highscores.truncate(count);
+                Ok(highscores)
             }
-            None => return Ok(HashMap::new()),
+            None => return Ok(Vec::new()),
         }
     }
 

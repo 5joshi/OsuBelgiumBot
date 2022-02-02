@@ -1,5 +1,7 @@
 use chrono::ParseError;
 use irc::error::Error as IrcError;
+use reqwest::Error as ReqwestError;
+use rosu_pp::ParseError as RosuParseError;
 use rosu_v2::prelude::OsuError;
 use serde_json::error::Error as JsonError;
 use songbird::error::JoinError;
@@ -8,6 +10,7 @@ use sqlx::migrate::MigrateError;
 use sqlx::Error as SqlError;
 use std::error::Error as StdError;
 use std::fmt;
+use std::io::Error as IoError;
 use std::num::ParseFloatError;
 use twilight_gateway::cluster::{ClusterCommandError, ClusterStartError};
 use twilight_http::request::application::interaction::update_original_response::UpdateOriginalResponseError;
@@ -43,6 +46,8 @@ pub enum Error {
     JoinVoicechat(#[from] JoinError),
     #[error("Error while handling json.")]
     Json(#[from] JsonError),
+    #[error("Error while downloading map.")]
+    MapDownload(#[from] MapDownloadError),
     #[error("Failed to migrate database.")]
     Migration(#[from] MigrateError),
     #[error("Slash author was not found.")]
@@ -53,6 +58,8 @@ pub enum Error {
     ParseFloat(#[from] ParseFloatError),
     #[error("Failed to parse timestamp with chrono.")]
     ParseTime(#[from] ParseError),
+    #[error("Error when parsing with rosu.")]
+    RosuParse(#[from] RosuParseError),
     #[error("Error when using method on songbird track.")]
     SongbirdTrack(#[from] TrackError),
     #[error("Error caused by database.")]
@@ -63,4 +70,14 @@ pub enum Error {
     UnknownInteraction { command: Box<ApplicationCommand> },
     #[error("Error while updating original response.")]
     UpdateOriginalResponse(#[from] UpdateOriginalResponseError),
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum MapDownloadError {
+    #[error("Reqwest error.")]
+    Reqwest(#[from] ReqwestError),
+    #[error("I/O error.")]
+    Io(#[from] IoError),
+    #[error("Failed to download map id {0}.")]
+    RetryLimit(u32),
 }

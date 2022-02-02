@@ -1,5 +1,5 @@
 mod builders;
-mod datetime;
+pub mod datetime;
 pub mod discord;
 mod ext;
 pub mod matcher;
@@ -11,6 +11,8 @@ pub use builders::embed::EmbedBuilder;
 pub use builders::footer::Footer;
 pub use builders::message::MessageBuilder;
 pub use ext::ApplicationCommandExt;
+use hashbrown::HashMap;
+use rosu_v2::prelude::Grade;
 use twilight_model::id::{ChannelId, GuildId, RoleId};
 
 // Colors
@@ -71,3 +73,32 @@ pub const DATE_FORMAT: &str = "%F %T";
 pub const INVITE_LINK: &str = "https://discord.com/api/oauth2/authorize?client_id=297073686916366336&permissions=36776045632&scope=bot%20applications.commands";
 pub const BATHBOT_WORKSHOP: &str = "https://discord.gg/n9fFstG";
 pub const BATHBOT_WORKSHOP_ID: u64 = 741040473476694159;
+pub const OSUVS_DATE_FORMAT: &str = "%A %e %B at %H:%M UTC";
+
+// Emotes
+pub const EMOTE_MEDALS: [&str; 3] = [":first_place:", ":second_place:", ":third_place:"];
+pub const EMOTE_XH_RANK: &str = "<:XH:938506675063775234>";
+pub const EMOTE_X_RANK: &str = "<:X_:938506675063775234>";
+pub const EMOTE_SH_RANK: &str = "<:SH:938506675063775234>";
+pub const EMOTE_S_RANK: &str = "<:S_:938506675063775234>";
+pub const EMOTE_A_RANK: &str = "<:A_:938506675063775234>";
+pub const EMOTE_B_RANK: &str = "<:B_:938506675063775234>";
+pub const EMOTE_C_RANK: &str = "<:C_:938506675063775234>";
+pub const EMOTE_D_RANK: &str = "<:D_:938506675063775234>";
+pub const EMOTE_F_RANK: &str = "<:F_:938506675063775234>";
+lazy_static! {
+    pub static ref EMOTE_RANKS: HashMap<Grade, &'static str> = {
+        let mut res = HashMap::new();
+        res.insert(Grade::XH, EMOTE_XH_RANK);
+        res.insert(Grade::X, EMOTE_X_RANK);
+        res.insert(Grade::SH, EMOTE_SH_RANK);
+        res.insert(Grade::S, EMOTE_S_RANK);
+        res.insert(Grade::A, EMOTE_A_RANK);
+        res.insert(Grade::B, EMOTE_B_RANK);
+        res.insert(Grade::C, EMOTE_C_RANK);
+        res.insert(Grade::D, EMOTE_D_RANK);
+        res.insert(Grade::F, EMOTE_F_RANK);
+
+        res
+    };
+}
