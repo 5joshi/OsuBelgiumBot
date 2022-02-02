@@ -1,5 +1,4 @@
 mod message;
-mod music;
 mod osuvs;
 mod utils;
 
@@ -16,8 +15,6 @@ use crate::{
     utils::ApplicationCommandExt,
 };
 pub use message::MessageActivity;
-
-use self::music::Music;
 
 pub fn twilight_commands() -> Vec<Command> {
     vec![
