@@ -1251,7 +1251,6 @@ dependencies = [
  "futures",
  "hashbrown",
  "irc",
- "itertools",
  "lazy_static",
  "log",
  "once_cell",

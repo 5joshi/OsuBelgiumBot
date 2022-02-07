@@ -1,11 +1,9 @@
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
 use futures::StreamExt;
 use hashbrown::HashMap;
-use rosu_v2::{model::score, prelude::Score};
-use sqlx::Row;
-use twilight_model::{channel::Message, id::ChannelId};
+use rosu_v2::prelude::Score;
 
-use crate::{commands::MessageActivity, database::Database, error::BotResult};
+use crate::{database::Database, error::BotResult};
 
 impl Database {
     pub async fn get_curr_osuvs_map(&self) -> Option<(u32, DateTime<Utc>, DateTime<Utc>)> {

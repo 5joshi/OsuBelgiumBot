@@ -6,8 +6,6 @@ use rosu_v2::prelude::OsuError;
 use serde_json::error::Error as JsonError;
 use sqlx::migrate::MigrateError;
 use sqlx::Error as SqlError;
-use std::error::Error as StdError;
-use std::fmt;
 use std::io::Error as IoError;
 use std::num::ParseFloatError;
 use twilight_gateway::cluster::{ClusterCommandError, ClusterStartError};

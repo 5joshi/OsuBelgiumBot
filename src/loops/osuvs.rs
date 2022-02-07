@@ -3,7 +3,6 @@ use futures::{
     future::{try_join_all, FutureExt},
     stream::{FuturesUnordered, StreamExt},
 };
-use itertools::Itertools;
 use rosu_pp::{osu::OsuPerformanceAttributes, Beatmap, OsuPP};
 use rosu_v2::prelude::{GameMode, GameMods, Grade, Score};
 use std::fmt::Write;
@@ -17,8 +16,8 @@ use crate::{
         datetime::sec_to_minsec,
         numbers::{round, with_comma_uint},
         osu::{map_to_string, prepare_beatmap_file},
-        ApplicationCommandExt, Author, EmbedBuilder, Footer, EMOTE_MEDALS, EMOTE_RANKS,
-        OSUVS_CHANNEL, OSUVS_DATE_FORMAT, OSU_BASE,
+        Author, EmbedBuilder, Footer, EMOTE_MEDALS, EMOTE_RANKS, OSUVS_CHANNEL, OSUVS_DATE_FORMAT,
+        OSU_BASE,
     },
 };
 

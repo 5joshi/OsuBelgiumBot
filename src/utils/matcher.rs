@@ -1,6 +1,5 @@
 use regex::Regex;
-use rosu_v2::model::GameMods;
-use std::{borrow::Cow, str::FromStr};
+use std::borrow::Cow;
 
 pub fn is_custom_emote(msg: &str) -> bool {
     EMOJI_MATCHER.is_match(msg)
@@ -59,13 +58,6 @@ pub fn get_osu_match_id(msg: &str) -> Option<u32> {
         .and_then(|c| c.as_str().parse::<u32>().ok())
 }
 
-pub fn get_youtube_id(msg: &str) -> Option<&str> {
-    YOUTUBE_LINK_MATCHER
-        .captures(msg)
-        .and_then(|c| c.get(1))
-        .map(|c| c.as_str())
-}
-
 #[allow(dead_code)]
 pub fn is_hit_results(msg: &str) -> bool {
     HIT_RESULTS_MATCHER.is_match(msg)
@@ -119,6 +111,4 @@ lazy_static! {
     static ref IGNORE_BADGE_MATCHER: Regex = Regex::new(r"^((?i)contrib|nomination|assessment|global|moderation|beatmap|spotlight|map|pending|aspire|elite|monthly|exemplary|outstanding|longstanding|idol[^@]+)").unwrap();
 
     static ref SEVEN_TWO_SEVEN: Regex = Regex::new("(?P<num>7[.,]?2[.,]?7)").unwrap();
-
-    static ref YOUTUBE_LINK_MATCHER: Regex = Regex::new("http(?:s?)://(?:www\\.)?youtu(?:be\\.com/watch\\?v=|\\.be/)([\\w\\-_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?").unwrap();
 }

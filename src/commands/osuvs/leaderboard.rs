@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use futures::future::try_join_all;
 use hashbrown::HashMap;
-use rosu_pp::{osu::OsuPerformanceAttributes, Beatmap, BeatmapExt, OsuPP};
+use rosu_pp::{osu::OsuPerformanceAttributes, Beatmap, OsuPP};
 use rosu_v2::prelude::{GameMode, GameMods};
 use twilight_model::application::interaction::ApplicationCommand;
 
@@ -20,7 +20,7 @@ use crate::{
 pub async fn leaderboard(ctx: Arc<Context>, command: ApplicationCommand) -> BotResult<()> {
     info!("Displaying current osuvs info...");
     match ctx.database.get_curr_osuvs_map().await {
-        Some((map_id, start_date, end_date)) => {
+        Some((map_id, _, _)) => {
             //? Send message to user in case of error?
             let map = ctx.osu.beatmap().map_id(map_id).await?;
             //? Send message to user in case of error?

@@ -1,7 +1,6 @@
 use flexi_logger::{
     filter::{LogLineFilter, LogLineWriter},
-    Age, Cleanup, Criterion, DeferredNow, Duplicate, FileSpec, LogSpecification, Logger,
-    LoggerHandle, Naming,
+    Age, Cleanup, Criterion, DeferredNow, Duplicate, FileSpec, Logger, LoggerHandle, Naming,
 };
 use log::Record;
 use once_cell::sync::OnceCell;

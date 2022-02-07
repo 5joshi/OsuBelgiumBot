@@ -1,10 +1,8 @@
-use std::collections::VecDeque;
 use std::sync::Arc;
 
 use crate::{osu_irc::IrcClient, stats::BotStats};
 use crate::{BotResult, Database};
 
-use parking_lot::RwLock;
 use rosu_v2::Osu as OsuClient;
 use twilight_cache_inmemory::InMemoryCache;
 use twilight_gateway::Cluster;
