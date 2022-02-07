@@ -6,9 +6,6 @@ use crate::{BotResult, Database};
 
 use parking_lot::RwLock;
 use rosu_v2::Osu as OsuClient;
-use songbird::tracks::LoopState;
-use songbird::EventHandler;
-use songbird::{tracks::TrackHandle, Songbird};
 use twilight_cache_inmemory::InMemoryCache;
 use twilight_gateway::Cluster;
 use twilight_http::Client as HttpClient;
@@ -20,10 +17,9 @@ pub struct Context {
     pub cache: InMemoryCache,
     pub database: Database,
     pub osu: OsuClient,
-    pub irc: IrcClient,
+    pub irc: Arc<IrcClient>,
     pub cluster: Cluster,
     pub http: HttpClient,
-    pub songbird: Songbird,
     pub standby: Standby,
     pub stats: BotStats,
 }

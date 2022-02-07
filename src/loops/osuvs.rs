@@ -84,7 +84,7 @@ async fn loop_iteration(ctx: &Context, map_id: u32, users: &[u32], start: DateTi
                     .user_scores(user_id)
                     .recent()
                     .mode(GameMode::STD)
-                    .limit(50)
+                    .limit(100)
                     .map(move |res| (user_id, res))
             })
             .collect::<FuturesUnordered<_>>()
@@ -106,27 +106,15 @@ async fn loop_iteration(ctx: &Context, map_id: u32, users: &[u32], start: DateTi
     // on the osuvs map for each played mod
     let recent_best: HashMap<_, _> = scores
         .into_iter()
-        .filter_map(|(_, scores)| {
-            let user_id = scores.first().map(|s| s.user_id)?;
-
-            let scores: Vec<_> = scores
+        .filter_map(|(user_id, scores)| {
+            scores
                 .into_iter()
                 .filter(|s| s.map.as_ref().unwrap().map_id == map_id)
                 .filter(|s| s.grade(None) != Grade::F)
                 .filter(|s| s.created_at >= start)
                 .filter(|s| !s.mods.contains(GameMods::ScoreV2))
-                .map(|s| (s.mods.bits(), s))
-                .sorted_by(|(m1, _), (m2, _)| m1.cmp(m2))
-                .group_by(|(mods, _)| *mods)
-                .into_iter()
-                .flat_map(|(_, group)| {
-                    group
-                        .sorted_by(|(_, s1), (_, s2)| s2.score.cmp(&s1.score))
-                        .next()
-                })
-                .collect();
-
-            (!scores.is_empty()).then(|| (user_id, scores))
+                .max_by_key(|s| s.score)
+                .map(|s| (user_id, s))
         })
         .collect();
 
@@ -144,8 +132,13 @@ async fn loop_iteration(ctx: &Context, map_id: u32, users: &[u32], start: DateTi
         }
     };
 
-    if !total_best.is_empty() {
-        for (user, score) in total_best {
+    for (user, score) in recent_best {
+        // Check if the new (mods,score) tuples are better than the previous ones
+        let new_score: Option<Score> = match total_best.get(&user) {
+            Some(s) => (score.score > s.score).then(|| score),
+            None => Some(score),
+        };
+        if let Some(score) = new_score {
             if let Err(why) = ctx
                 .database
                 .insert_osuvs_highscores(map_id, user, score)
@@ -232,7 +225,7 @@ async fn map_end(ctx: &Context, map_id: u32) -> BotResult<()> {
 
     let title = map_to_string(&map);
     let url = format!("{}b/{}", OSU_BASE, map_id);
-    let author = Author::new("Current OsuVS Leaderboard");
+    let author = Author::new("The OsuVS has ended! Here are the final results!");
 
     if highscores.len() == 0 {
         let description = "No scores have been submitted this week! I am quite saddened by this :(";
@@ -289,7 +282,7 @@ async fn map_end(ctx: &Context, map_id: u32) -> BotResult<()> {
             score.mods,
             round(pp as f32),
             round(max_pp as f32),
-            score.accuracy,
+            round(score.accuracy),
             &score.created_at.timestamp()
         );
     }

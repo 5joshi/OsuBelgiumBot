@@ -43,13 +43,12 @@ impl IrcClient {
         let mut stream = client.stream()?;
 
         info!("[IRC] Connected to Bancho");
-
+        debug!("{:?}", self.targets);
         while let Some(msg) = stream.next().await.transpose()? {
             match msg.command {
                 Command::JOIN(..) => {
                     if let Some(Prefix::Nickname(mut name, ..)) = msg.prefix {
                         name.make_ascii_lowercase();
-
                         if self.targets.contains(&name) {
                             info!("[IRC] {} now online", name);
 

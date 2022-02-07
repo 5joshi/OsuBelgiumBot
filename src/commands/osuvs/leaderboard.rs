@@ -101,7 +101,7 @@ pub async fn leaderboard(ctx: Arc<Context>, command: ApplicationCommand) -> BotR
                     score.mods,
                     round(pp as f32),
                     round(max_pp as f32),
-                    score.accuracy,
+                    round(score.accuracy),
                     &score.created_at.timestamp()
                 );
             }

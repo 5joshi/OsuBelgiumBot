@@ -77,15 +77,15 @@ pub const OSUVS_DATE_FORMAT: &str = "%A %e %B at %H:%M UTC";
 
 // Emotes
 pub const EMOTE_MEDALS: [&str; 3] = [":first_place:", ":second_place:", ":third_place:"];
-pub const EMOTE_XH_RANK: &str = "<:XH:938506675063775234>";
-pub const EMOTE_X_RANK: &str = "<:X_:938506675063775234>";
-pub const EMOTE_SH_RANK: &str = "<:SH:938506675063775234>";
-pub const EMOTE_S_RANK: &str = "<:S_:938506675063775234>";
-pub const EMOTE_A_RANK: &str = "<:A_:938506675063775234>";
-pub const EMOTE_B_RANK: &str = "<:B_:938506675063775234>";
-pub const EMOTE_C_RANK: &str = "<:C_:938506675063775234>";
-pub const EMOTE_D_RANK: &str = "<:D_:938506675063775234>";
-pub const EMOTE_F_RANK: &str = "<:F_:938506675063775234>";
+pub const EMOTE_XH_RANK: &str = "<:XH:515354675059621888>";
+pub const EMOTE_X_RANK: &str = "<:SH:515354675323600933>";
+pub const EMOTE_SH_RANK: &str = "<:X_:515354674929336320>";
+pub const EMOTE_S_RANK: &str = "<:S_:515354674791186433>";
+pub const EMOTE_A_RANK: &str = "<:A_:515339175222837259>";
+pub const EMOTE_B_RANK: &str = "<:B_:515354674866683904>";
+pub const EMOTE_C_RANK: &str = "<:C_:515354674476351492>";
+pub const EMOTE_D_RANK: &str = "<:D_:515354674963021824>";
+pub const EMOTE_F_RANK: &str = "<:F_:515623098947600385>";
 lazy_static! {
     pub static ref EMOTE_RANKS: HashMap<Grade, &'static str> = {
         let mut res = HashMap::new();

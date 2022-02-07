@@ -29,18 +29,16 @@ use error::{BotResult, Error};
 
 use futures::StreamExt;
 use osu_irc::IrcClient;
-use parking_lot::RwLock;
-use rosu_v2::Osu;
-use songbird::Songbird;
+use rosu_v2::{prelude::OsuError, Osu};
 use stats::BotStats;
-use std::{collections::VecDeque, env, sync::Arc};
+use std::{env, sync::Arc, time::Duration};
+use tokio::time::sleep;
 use twilight_cache_inmemory::{InMemoryCache, ResourceType};
 use twilight_gateway::{cluster::Events, Cluster, Event, EventTypeFlags, Intents};
 use twilight_http::Client as HttpClient;
 use twilight_model::{
     application::interaction::Interaction,
     gateway::presence::{ActivityType, Status},
-    id::GuildId,
 };
 use twilight_standby::Standby;
 use utils::{
@@ -120,7 +118,6 @@ async fn async_main() -> BotResult<()> {
         .await?;
     cluster.up().await;
 
-    let songbird = Songbird::twilight(cluster.clone(), user_id);
     let cache = InMemoryCache::builder()
         .resource_types(ResourceType::CHANNEL | ResourceType::GUILD | ResourceType::VOICE_STATE)
         .build();
@@ -147,7 +144,45 @@ async fn async_main() -> BotResult<()> {
     let osu = Osu::new(client_id, client_secret).await?;
 
     // TODO: DashSet should contain list of users to track
-    let irc = IrcClient::new(DashSet::new());
+    let targets = DashSet::new();
+    let members = database.get_manual_links().await?;
+    for (_, osu_id) in members {
+        match osu.user(osu_id).await {
+            Ok(user) => {
+                targets.insert(user.username.to_lowercase());
+                ()
+            }
+            Err(OsuError::NotFound) => println!("User with osu_id {} was not found", osu_id),
+            Err(why) => unwind_error!(
+                error,
+                why,
+                "Error when retrieving usernames from manual links: {}"
+            ),
+        }
+    }
+    debug!("{:#?}", targets);
+
+    // IRC
+    let server = env::var("IRC_SERVER").expect("Could not load IRC_SERVER");
+    let port = env::var("IRC_PORT")
+        .expect("Could not load IRC_PORT")
+        .parse::<u16>()
+        .expect("IRC_PORT expected to be a u16");
+    let nickname = env::var("IRC_NICKNAME").expect("Could not load IRC_NICKNAME");
+    let password = env::var("IRC_PASSWORD").expect("Could not load IRC_PASSWORD");
+    let irc = Arc::new(IrcClient::new(targets));
+    let irc_clone = Arc::clone(&irc);
+
+    // Boot up IRC client
+    tokio::spawn(async move {
+        loop {
+            if let Err(why) = irc_clone.run(&server, port, &nickname, &password).await {
+                unwind_error!(error, why, "Error while running IRC: {}");
+            }
+
+            sleep(Duration::from_secs(1)).await;
+        }
+    });
 
     // let trackdata = RwLock::new(None);
 
@@ -162,7 +197,6 @@ async fn async_main() -> BotResult<()> {
         http,
         irc,
         osu,
-        songbird,
         standby,
         stats,
     };
@@ -180,19 +214,12 @@ async fn async_main() -> BotResult<()> {
     info!("Shutting down cluster...");
     ctx.cluster.down();
 
-    info!("Clearing song queue...");
-    if let Some(call) = ctx.songbird.get(SERVER_ID) {
-        let call = call.lock().await;
-        call.queue().stop();
-    }
-
     Ok(())
 }
 
 async fn event_loop(ctx: Arc<Context>, mut events: Events) {
     while let Some((shard_id, event)) = events.next().await {
         ctx.cache.update(&event);
-        ctx.songbird.process(&event).await;
         ctx.standby.process(&event);
         let ctx = Arc::clone(&ctx);
 
@@ -293,7 +320,7 @@ async fn handle_event(ctx: Arc<Context>, event: Event, shard_id: u64) -> BotResu
             ctx.database.remove_unchecked_member(m.user.id).await?;
         }
         Event::MemberUpdate(m) => {
-            debug!("{:?}", m);
+            // debug!("{:?}", m);
             if !m.roles.contains(&UNCHECKED_ROLE_ID) {
                 if ctx.database.remove_unchecked_member(m.user.id).await? {
                     let content = format!("**Welcome <@!{}>!\n\nSay hi, or else...**", m.user.id);

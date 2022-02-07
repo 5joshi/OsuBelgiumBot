@@ -3,7 +3,7 @@
 ## Database changes
 ```sh 
 $ sqlx migrate revert
-$ psql -U postgres -d dev
+$ psql -U postgres -d osube
 > DROP table _sqlx_migrations;
 > \q
 $ sqlx migrate run

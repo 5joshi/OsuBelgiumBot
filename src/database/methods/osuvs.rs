@@ -94,7 +94,7 @@ impl Database {
 
     pub async fn get_latest_osuvs_date(&self) -> BotResult<DateTime<Utc>> {
         let now = Utc::now();
-        sqlx::query!("SELECT end_date FROM osuvs_maps ORDER BY end_date ASC LIMIT 1")
+        sqlx::query!("SELECT end_date FROM osuvs_maps ORDER BY end_date DESC LIMIT 1")
             .fetch_optional(&self.pool)
             .await
             .map(|r_opt| match r_opt {

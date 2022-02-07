@@ -37,12 +37,6 @@ serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
 slash_command_macro = { path = "./slash_command_macro" }
-songbird = { version = "0.2.0", default-features = false, features = [
-    "builtin-queue",
-    "driver",
-    "twilight-rustls",
-    "zlib-stock",
-] }
 sqlx = { version = "0.5", default-features = false, features = [
     "chrono",
     "json",
@@ -58,3 +52,10 @@ twilight-gateway = "0.6.2"
 twilight-http = "0.6"
 twilight-model = "0.6"
 twilight-standby = "0.6"
+
+[features]
+vendored-openssl = ["openssl/vendored"]
+
+[dependencies.openssl]
+version = "0.10"
+optional = true

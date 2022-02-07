@@ -11,6 +11,7 @@ pub struct MessageBuilder<'c> {
     pub embed: Option<Embed>,
     pub file: Option<(&'static str, &'c [u8])>,
     pub components: Option<&'c [Component]>,
+    pub ephemeral: bool,
 }
 
 impl<'c> MessageBuilder<'c> {
@@ -26,6 +27,12 @@ impl<'c> MessageBuilder<'c> {
 
     pub fn embed(mut self, embed: impl IntoEmbed) -> Self {
         self.embed.replace(embed.into_embed());
+
+        self
+    }
+
+    pub fn ephemeral(mut self) -> Self {
+        self.ephemeral = true;
 
         self
     }
@@ -54,10 +61,8 @@ impl<'c> MessageBuilder<'c> {
 impl<'c> From<Embed> for MessageBuilder<'c> {
     fn from(embed: Embed) -> Self {
         Self {
-            content: None,
             embed: Some(embed),
-            file: None,
-            components: None,
+            ..Default::default()
         }
     }
 }

@@ -15,12 +15,12 @@ const CTB_TOP_COUNT: usize = 5;
 
 pub async fn background_loop(ctx: Arc<Context>) {
     // Once per day
-    let mut interval = interval(TokioDuration::from_secs(60)); //* 60 * 24));
+    let mut interval = interval(TokioDuration::from_secs(60 * 60 * 24));
     interval.tick().await;
 
     loop {
         interval.tick().await;
-        // top_role(&ctx).await;
+        top_role(&ctx).await;
         not_checked_role(&ctx).await;
         info!("Handled unchecked members and top role distribution");
     }

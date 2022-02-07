@@ -18,7 +18,7 @@ use crate::{context::Context, error::BotResult, utils::osu::get_osu_map_id};
 
 #[command]
 #[args = "OsuVSArgs"]
-#[description = "Perform commands related to osu!VS"]
+#[description = "Perform commands related to osuvs"]
 #[options = "osuvs_options"]
 pub struct OsuVS;
 
@@ -37,7 +37,7 @@ impl OsuVSArgs {
                 match name.as_str() {
                     "info" => return Ok(Self::Info),
                     "leaderboard" => return Ok(Self::Leaderboard),
-                    "request list" => return Ok(Self::RequestList),
+                    "requestlist" => return Ok(Self::RequestList),
                     "request" => return Self::parse_request_options(options),
                     "start" => return Self::parse_start_options(options),
                     _ => (),
@@ -77,35 +77,35 @@ impl OsuVSArgs {
 
 fn osuvs_options() -> Vec<CommandOption> {
     let info = OptionsCommandOptionData {
-        description: "Get information about the current osu!VS map".to_string(),
+        description: "Get information about the current osuvs map".to_string(),
         name: "info".to_string(),
         options: vec![],
         required: false,
     };
 
     let leaderboard = OptionsCommandOptionData {
-        description: "Get the leaderboard for the current osu!VS map".to_string(),
+        description: "Get the leaderboard for the current osuvs map".to_string(),
         name: "leaderboard".to_string(),
         options: vec![],
         required: false,
     };
 
     let request_list = OptionsCommandOptionData {
-        description: "Get the list of osu!VS map requests. Only admins can use this".to_string(),
-        name: "request list".to_string(),
+        description: "Get the list of osuvs map requests. Only admins can use this".to_string(),
+        name: "requestlist".to_string(),
         options: vec![],
         required: false,
     };
 
     let request_option = ChoiceCommandOptionData {
         choices: vec![],
-        description: "Specify the map url (difficulty, not mapset!)".to_string(),
+        description: "Specify the map url (difficulty, not mapset)".to_string(),
         name: "map".to_string(),
         required: true,
     };
 
     let request = OptionsCommandOptionData {
-        description: "Request a map for a future osu!VS".to_string(),
+        description: "Request a map for a future osuvs".to_string(),
         name: "request".to_string(),
         options: vec![CommandOption::String(request_option)],
         required: false,
@@ -113,13 +113,13 @@ fn osuvs_options() -> Vec<CommandOption> {
 
     let start_option = ChoiceCommandOptionData {
         choices: vec![],
-        description: "Specify the map url (difficulty, not mapset!)".to_string(),
+        description: "Specify the map url (difficulty, not mapset)".to_string(),
         name: "map".to_string(),
         required: true,
     };
 
     let start = OptionsCommandOptionData {
-        description: "Start or enqueue a map to the list of osu!VS maps".to_string(),
+        description: "Start or enqueue a map to the list of osuvs maps".to_string(),
         name: "start".to_string(),
         options: vec![CommandOption::String(start_option)],
         required: false,

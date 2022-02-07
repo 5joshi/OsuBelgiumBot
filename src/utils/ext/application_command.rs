@@ -7,6 +7,7 @@ use twilight_model::{
         callback::{CallbackData, InteractionResponse},
         interaction::{application_command::CommandDataOption, ApplicationCommand},
     },
+    channel::message::MessageFlags,
     id::UserId,
 };
 
@@ -64,7 +65,7 @@ impl ApplicationCommandExt for ApplicationCommand {
             components: None,
             content: builder.content.map(Cow::into_owned),
             embeds: builder.embed.map_or_else(Vec::new, |e| vec![e]),
-            flags: None,
+            flags: builder.ephemeral.then(|| MessageFlags::EPHEMERAL),
             tts: None,
         });
 

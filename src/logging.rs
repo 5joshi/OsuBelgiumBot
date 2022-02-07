@@ -38,7 +38,7 @@ pub fn initialize() {
             Naming::Timestamps,
             Cleanup::KeepLogAndCompressedFiles(5, 20),
         )
-        .duplicate_to_stdout(Duplicate::Info)
+        .duplicate_to_stdout(Duplicate::Debug)
         .start_with_specfile("logconfig.toml")
         .expect("Failed to make logger.");
 

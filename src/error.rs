@@ -4,8 +4,6 @@ use reqwest::Error as ReqwestError;
 use rosu_pp::ParseError as RosuParseError;
 use rosu_v2::prelude::OsuError;
 use serde_json::error::Error as JsonError;
-use songbird::error::JoinError;
-use songbird::tracks::TrackError;
 use sqlx::migrate::MigrateError;
 use sqlx::Error as SqlError;
 use std::error::Error as StdError;
@@ -42,8 +40,6 @@ pub enum Error {
     Interaction(#[from] InteractionError),
     #[error("Failed to communicate with osu! IRC.")]
     Irc(#[from] IrcError),
-    #[error("Failed to join discord voicechat.")]
-    JoinVoicechat(#[from] JoinError),
     #[error("Error while handling json.")]
     Json(#[from] JsonError),
     #[error("Error while downloading map.")]
@@ -60,8 +56,6 @@ pub enum Error {
     ParseTime(#[from] ParseError),
     #[error("Error when parsing with rosu.")]
     RosuParse(#[from] RosuParseError),
-    #[error("Error when using method on songbird track.")]
-    SongbirdTrack(#[from] TrackError),
     #[error("Error caused by database.")]
     Sql(#[from] SqlError),
     #[error("Error while using Twilight HTTP.")]
