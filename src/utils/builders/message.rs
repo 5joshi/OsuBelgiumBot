@@ -39,7 +39,9 @@ impl<'c> MessageBuilder<'c> {
 
     pub fn error(mut self, embed: impl IntoEmbed) -> Self {
         self.embed.replace(embed.into_embed());
-        self.embed.as_mut().map(|e| e.color = Some(RED));
+        if let Some(e) = self.embed.as_mut() {
+            e.color = Some(RED)
+        }
 
         self
     }

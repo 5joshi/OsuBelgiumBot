@@ -52,7 +52,7 @@ impl Database {
                 highscores.truncate(count);
                 Ok(highscores)
             }
-            None => return Ok(Vec::new()),
+            None => Ok(Vec::new()),
         }
     }
 

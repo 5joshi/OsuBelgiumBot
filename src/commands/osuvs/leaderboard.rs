@@ -52,7 +52,7 @@ pub async fn leaderboard(ctx: Arc<Context>, command: ApplicationCommand) -> BotR
             let url = format!("{}b/{}", OSU_BASE, map_id);
             let author = Author::new("Current OsuVS Leaderboard");
 
-            if highscores.len() == 0 {
+            if highscores.is_empty() {
                 let description = "No scores have been submitted yet! This is very sad :(";
                 let builder = EmbedBuilder::new()
                     .title(title)

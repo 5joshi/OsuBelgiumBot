@@ -226,7 +226,7 @@ async fn map_end(ctx: &Context, map_id: u32) -> BotResult<()> {
     let url = format!("{}b/{}", OSU_BASE, map_id);
     let author = Author::new("The OsuVS has ended! Here are the final results!");
 
-    if highscores.len() == 0 {
+    if highscores.is_empty() {
         let description = "No scores have been submitted this week! I am quite saddened by this :(";
         let builder = EmbedBuilder::new()
             .title(title)

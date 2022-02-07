@@ -55,11 +55,11 @@ pub struct BotStats {
 
 macro_rules! metric_vec {
     (counter: $opt:literal, $help:literal, $label:literal) => {
-        IntCounterVec::new(Opts::new($opt, $help), &[$label]).unwrap();
+        IntCounterVec::new(Opts::new($opt, $help), &[$label]).unwrap()
     };
 
     (gauge: $opt:literal, $help:literal, $label:literal) => {
-        IntGaugeVec::new(Opts::new($opt, $help), &[$label]).unwrap();
+        IntGaugeVec::new(Opts::new($opt, $help), &[$label]).unwrap()
     };
 }
 
@@ -75,9 +75,7 @@ impl BotStats {
         let registry = Registry::new_custom(Some(String::from("bathbot")), None).unwrap();
         registry.register(Box::new(event_counter.clone())).unwrap();
         registry.register(Box::new(msg_counter.clone())).unwrap();
-        registry
-            .register(Box::new(message_commands.clone()))
-            .unwrap();
+        registry.register(Box::new(message_commands)).unwrap();
         registry.register(Box::new(slash_commands.clone())).unwrap();
         registry.register(Box::new(osu_metrics.clone())).unwrap();
 

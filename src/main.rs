@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 macro_rules! unwind_error {
     ($log:ident, $err:ident, $($arg:tt)+) => {
         {
@@ -150,7 +152,6 @@ async fn async_main() -> BotResult<()> {
         match osu.user(osu_id).await {
             Ok(user) => {
                 targets.insert(user.username.to_lowercase());
-                ()
             }
             Err(OsuError::NotFound) => println!("User with osu_id {} was not found", osu_id),
             Err(why) => unwind_error!(
@@ -321,20 +322,20 @@ async fn handle_event(ctx: Arc<Context>, event: Event, shard_id: u64) -> BotResu
         }
         Event::MemberUpdate(m) => {
             // debug!("{:?}", m);
-            if !m.roles.contains(&UNCHECKED_ROLE_ID) {
-                if ctx.database.remove_unchecked_member(m.user.id).await? {
-                    let content = format!("**Welcome <@!{}>!\n\nSay hi, or else...**", m.user.id);
-                    let embed = EmbedBuilder::new()
-                        .description(content)
-                        .thumbnail(user_avatar(&m.user))
-                        .build();
-                    let _ = ctx
-                        .http
-                        .create_message(GENERAL_CHANNEL)
-                        .embeds(&[embed])?
-                        .exec()
-                        .await;
-                };
+            if !m.roles.contains(&UNCHECKED_ROLE_ID)
+                && ctx.database.remove_unchecked_member(m.user.id).await?
+            {
+                let content = format!("**Welcome <@!{}>!\n\nSay hi, or else...**", m.user.id);
+                let embed = EmbedBuilder::new()
+                    .description(content)
+                    .thumbnail(user_avatar(&m.user))
+                    .build();
+                let _ = ctx
+                    .http
+                    .create_message(GENERAL_CHANNEL)
+                    .embeds(&[embed])?
+                    .exec()
+                    .await;
             }
         }
         Event::MessageCreate(e) => {
