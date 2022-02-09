@@ -67,15 +67,12 @@ impl BotStats {
     pub fn new(osu_metrics: IntCounterVec) -> Self {
         let event_counter = metric_vec!(counter: "gateway_events", "Gateway events", "events");
         let msg_counter = metric_vec!(counter: "messages", "Received messages", "sender_type");
-        let message_commands =
-            metric_vec!(counter: "message_commands", "Executed message commands", "name");
         let slash_commands =
             metric_vec!(counter: "slash_commands", "Executed slash commands", "name");
 
         let registry = Registry::new_custom(Some(String::from("bathbot")), None).unwrap();
         registry.register(Box::new(event_counter.clone())).unwrap();
         registry.register(Box::new(msg_counter.clone())).unwrap();
-        registry.register(Box::new(message_commands)).unwrap();
         registry.register(Box::new(slash_commands.clone())).unwrap();
         registry.register(Box::new(osu_metrics.clone())).unwrap();
 

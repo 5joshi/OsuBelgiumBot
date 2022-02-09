@@ -258,6 +258,7 @@ async fn handle_event(ctx: Arc<Context>, event: Event, shard_id: u64) -> BotResu
         }
         Event::InteractionCreate(e) => {
             if let Interaction::ApplicationCommand(command) = e.0 {
+                ctx.stats.increment_slash_command(&command.data.name);
                 handle_interaction(ctx, *command).await?;
             }
         }
@@ -338,8 +339,16 @@ async fn handle_event(ctx: Arc<Context>, event: Event, shard_id: u64) -> BotResu
                     .await;
             }
         }
-        Event::MessageCreate(e) => {
-            ctx.database.insert_message(&(*e).0).await?;
+        Event::MessageCreate(msg) => {
+            ctx.stats.event_counts.message_create.inc();
+
+            if !msg.author.bot {
+                ctx.stats.message_counts.user_messages.inc()
+            } else {
+                ctx.stats.message_counts.other_bot_messages.inc()
+            }
+
+            ctx.database.insert_message(&(*msg).0).await?;
         }
         Event::Resumed => info!("Shard {} is resumed", shard_id),
         Event::RoleCreate(_) => ctx.stats.event_counts.role_create.inc(),

@@ -65,7 +65,10 @@ pub async fn prepare_beatmap_file(map_id: u32) -> Result<String, MapDownloadErro
 
 async fn request_beatmap_file(map_id: u32) -> Result<Bytes, MapDownloadError> {
     let url = format!("{OSU_BASE}osu/{map_id}");
-    let mut content = reqwest::get(&url).await?.bytes().await?;
+    let mut content = reqwest::get(&url)
+        .await?
+        .bytes()
+        .await?;
 
     if content.len() >= 6 && &content.slice(0..6)[..] != b"<html>" {
         return Ok(content);
@@ -78,14 +81,17 @@ async fn request_beatmap_file(map_id: u32) -> Result<Bytes, MapDownloadError> {
         debug!("Request beatmap retry attempt #{i} | Backoff {duration:?}");
         sleep(duration).await;
 
-        content = reqwest::get(&url).await?.bytes().await?;
+        content = reqwest::get(&url)
+            .await?
+            .bytes()
+            .await?;
 
         if content.len() >= 6 && &content.slice(0..6)[..] != b"<html>" {
             return Ok(content);
         }
     }
 
-    (content.len() >= 6 && &content.slice(0..6)[..] != b"<html>")
+    (content.len() >= 6 && &content.slice(0..6)[..] != b"<html>") 
         .then(|| content)
         .ok_or(MapDownloadError::RetryLimit(map_id))
 }
