@@ -1,4 +1,5 @@
 use crate::BotResult;
+use cow_utils::CowUtils;
 use dashmap::DashSet;
 use futures::stream::StreamExt;
 use irc::client::prelude::*;
@@ -48,7 +49,7 @@ impl IrcClient {
             match msg.command {
                 Command::JOIN(..) => {
                     if let Some(Prefix::Nickname(mut name, ..)) = msg.prefix {
-                        name.make_ascii_lowercase();
+                        name.cow_to_ascii_lowercase();
                         if self.targets.contains(&name) {
                             info!("[IRC] {} now online", name);
 
@@ -58,7 +59,7 @@ impl IrcClient {
                 }
                 Command::QUIT(..) => {
                     if let Some(Prefix::Nickname(mut name, ..)) = msg.prefix {
-                        name.make_ascii_lowercase();
+                        name.cow_to_ascii_lowercase();
 
                         if self.online.remove(&name).is_some() {
                             info!("[IRC] {} now offline", name,);
