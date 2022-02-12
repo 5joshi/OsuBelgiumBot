@@ -204,10 +204,9 @@ async fn async_main() -> BotResult<()> {
 
     let ctx = Arc::new(ctx);
 
-    tokio::spawn(background_loop(Arc::clone(&ctx)));
-    tokio::spawn(osu_tracking(Arc::clone(&ctx)));
-
     tokio::select! {
+        _ = background_loop(Arc::clone(&ctx)) => {}
+        _ = osu_tracking(Arc::clone(&ctx)) => {}
         _ = event_loop(Arc::clone(&ctx), events) => {}
         _ = wait_for_ctrl_c() => {}
     };
