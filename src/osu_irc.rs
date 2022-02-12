@@ -49,18 +49,18 @@ impl IrcClient {
             match msg.command {
                 Command::JOIN(..) => {
                     if let Some(Prefix::Nickname(mut name, ..)) = msg.prefix {
-                        let name = name.cow_to_ascii_lowercase().into_owned();
-                        if self.targets.contains(&name) {
+                        let name = name.cow_to_ascii_lowercase();
+                        if self.targets.contains(name.as_ref()) {
                             info!("[IRC] {} now online", name);
 
-                            self.online.insert(name);
+                            self.online.insert(name.into_owned());
                         }
                     }
                 }
                 Command::QUIT(..) => {
                     if let Some(Prefix::Nickname(mut name, ..)) = msg.prefix {
-                        let name = name.cow_to_ascii_lowercase().into_owned();
-                        if self.online.remove(&name).is_some() {
+                        let name = name.cow_to_ascii_lowercase();
+                        if self.online.remove(name.as_ref()).is_some() {
                             info!("[IRC] {} now offline", name);
                         }
                     }
