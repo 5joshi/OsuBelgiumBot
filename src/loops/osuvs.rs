@@ -27,7 +27,7 @@ pub async fn osu_tracking(ctx: Arc<Context>) {
     let mut interval = interval(Duration::from_secs(OSUVS_TRACK_INTERVAL));
     interval.tick().await;
 
-    let mut user_ids = HashMap::with_capacity(ctx.irc.targets.len());
+    let mut user_ids = HashMap::new();
 
     loop {
         interval.tick().await;
@@ -46,11 +46,21 @@ pub async fn osu_tracking(ctx: Arc<Context>) {
 
         let mut users = Vec::new();
 
-        for name in ctx.irc.online.iter() {
-            if !user_ids.contains_key(name.as_str()) {
-                match ctx.osu.user(name.as_str()).await {
+        for (number, online) in ctx.irc.targets.iter() {
+            if !user_ids.contains_key(number) {
+                let bytes = number.to_be_bytes();
+                let mut slice = &bytes[..];
+                while let [first, rest @ ..] = slice {
+                    if *first == 0 {
+                        slice = rest;
+                    } else {
+                        break;
+                    }
+                }
+                let name = std::str::from_utf8(slice).unwrap();
+                match ctx.osu.user(name).await {
                     Ok(user) => {
-                        user_ids.insert(name.to_owned(), user.user_id);
+                        user_ids.insert(number, user.user_id);
                     }
                     Err(why) => {
                         unwind_error!(warn, why, "Failed to add user id`: {}");
@@ -59,7 +69,7 @@ pub async fn osu_tracking(ctx: Arc<Context>) {
                 }
             }
 
-            users.push(user_ids[name.as_str()]);
+            users.push(user_ids[number]);
         }
 
         debug!("[Track] {} users: {:?}", users.len(), users);

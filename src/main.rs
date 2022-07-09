@@ -25,7 +25,6 @@ mod stats;
 mod utils;
 
 use context::Context;
-use dashmap::DashSet;
 use database::Database;
 use error::{BotResult, Error};
 
@@ -50,7 +49,7 @@ use utils::{
 use crate::{
     commands::handle_interaction,
     loops::{background_loop, osu_tracking},
-    utils::{GENERAL_CHANNEL, SERVER_ID},
+    utils::{conc_map::SyncRwLockMap, osu::username_to_number, GENERAL_CHANNEL, SERVER_ID},
 };
 
 #[macro_use]
@@ -146,12 +145,13 @@ async fn async_main() -> BotResult<()> {
     let osu = Osu::new(client_id, client_secret).await?;
 
     // TODO: DashSet should contain list of users to track
-    let targets = DashSet::new();
+    let targets = SyncRwLockMap::default();
     let members = database.get_manual_links().await?;
     for (_, osu_id) in members {
         match osu.user(osu_id).await {
             Ok(user) => {
-                targets.insert(user.username.to_lowercase());
+                let number = username_to_number(&user.username);
+                targets.write(number).insert(false)
             }
             Err(OsuError::NotFound) => println!("User with osu_id {} was not found", osu_id),
             Err(why) => unwind_error!(

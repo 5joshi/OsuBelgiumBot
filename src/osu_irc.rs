@@ -1,24 +1,20 @@
-use crate::BotResult;
+use crate::{
+    utils::{conc_map::SyncRwLockMap, osu::username_to_number},
+    BotResult,
+};
 use cow_utils::CowUtils;
-use dashmap::DashSet;
 use futures::stream::StreamExt;
 use irc::client::prelude::*;
 
 pub struct IrcClient {
     // Tracked users
-    pub targets: DashSet<String>,
-
-    // Online users
-    pub online: DashSet<String>,
+    pub targets: SyncRwLockMap<u128, bool>,
 }
 
 impl IrcClient {
     #[inline]
-    pub fn new(targets: DashSet<String>) -> Self {
-        IrcClient {
-            targets,
-            online: DashSet::new(),
-        }
+    pub fn new(targets: SyncRwLockMap<u128, bool>) -> Self {
+        IrcClient { targets }
     }
 
     pub async fn run(
@@ -46,22 +42,31 @@ impl IrcClient {
         info!("[IRC] Connected to Bancho");
         debug!("{:?}", self.targets);
         while let Some(msg) = stream.next().await.transpose()? {
+            // info!("{:#?}", msg);
             match msg.command {
                 Command::JOIN(..) => {
                     if let Some(Prefix::Nickname(mut name, ..)) = msg.prefix {
-                        let name = name.cow_to_ascii_lowercase();
-                        if self.targets.contains(name.as_ref()) {
+                        let number: u128 = username_to_number(&name);
+
+                        if matches!(self.targets.read(number).get(), Some(false)) {
                             info!("[IRC] {} now online", name);
 
-                            self.online.insert(name.into_owned());
+                            if let Some(online) = self.targets.write(number).get_mut() {
+                                *online = true
+                            };
                         }
                     }
                 }
                 Command::QUIT(..) => {
                     if let Some(Prefix::Nickname(mut name, ..)) = msg.prefix {
-                        let name = name.cow_to_ascii_lowercase();
-                        if self.online.remove(name.as_ref()).is_some() {
+                        let number: u128 = username_to_number(&name);
+
+                        if matches!(self.targets.read(number).get(), Some(true)) {
                             info!("[IRC] {} now offline", name);
+
+                            if let Some(online) = self.targets.write(number).get_mut() {
+                                *online = false
+                            };
                         }
                     }
                 }
