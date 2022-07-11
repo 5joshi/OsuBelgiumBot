@@ -325,7 +325,7 @@ async fn handle_event(ctx: Arc<Context>, event: Event, shard_id: u64) -> BotResu
             if !m.roles.contains(&UNCHECKED_ROLE_ID)
                 && ctx.database.remove_unchecked_member(m.user.id).await?
             {
-                let content = format!("**Welcome <@!{}>!\n\nSay hi, or else...**", m.user.id);
+                let content = format!("**Welcome <@{}>!\n\nSay hi, or else...**", m.user.id);
                 let embed = EmbedBuilder::new()
                     .description(content)
                     .thumbnail(user_avatar(&m.user))
