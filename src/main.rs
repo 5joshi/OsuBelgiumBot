@@ -280,7 +280,7 @@ async fn handle_event(ctx: Arc<Context>, event: Event, shard_id: u64) -> BotResu
         Event::MemberAdd(m) => {
             debug!("{:?}", m);
             let content = format!(
-                "<@!{}> just joined the server, awaiting approval owo",
+                "<@{}> just joined the server, awaiting approval owo",
                 m.user.id
             );
             let embed = EmbedBuilder::new().description(content).build();
@@ -333,6 +333,14 @@ async fn handle_event(ctx: Arc<Context>, event: Event, shard_id: u64) -> BotResu
                 let _ = ctx
                     .http
                     .create_message(GENERAL_CHANNEL)
+                    .embeds(&[embed])?
+                    .exec()
+                    .await;
+                let content = format!("<@{}> has been approved", m.user.id);
+                let embed = EmbedBuilder::new().description(content).build();
+                let _ = ctx
+                    .http
+                    .create_message(APPROVE_CHANNEL)
                     .embeds(&[embed])?
                     .exec()
                     .await;
