@@ -16,7 +16,8 @@ pub async fn start(
 ) -> BotResult<()> {
     //? Do this better
     if !(matches!(command.user_id(), Ok(UserId(185773647246524416)))
-        || matches!(command.user_id(), Ok(UserId(219905108316520448))))
+        || matches!(command.user_id(), Ok(UserId(219905108316520448)))
+        || matches!(command.user_id(), Ok(UserId(127449164224266240))))
     {
         let builder =
             MessageBuilder::new().error("You do not have permission to use this command!");
