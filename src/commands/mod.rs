@@ -47,8 +47,8 @@ pub async fn handle_interaction(ctx: Arc<Context>, command: ApplicationCommand) 
         Ping::NAME => Ping::run(ctx, command).await,
         Roll::NAME => Roll::run(ctx, command).await,
         // OsuVS::NAME => OsuVS::run(ctx, command).await,
-        // _ => Err(Error::UnknownInteraction {
-        //     command: Box::new(command),
-        // }),
+        _ => Err(Error::UnknownInteraction {
+            command: Box::new(command),
+        }),
     }
 }
