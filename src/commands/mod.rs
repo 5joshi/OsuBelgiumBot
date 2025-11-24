@@ -14,7 +14,8 @@ use crate::{
 };
 
 pub fn twilight_commands() -> Vec<Command> {
-    vec![Ping::define(), Roll::define(), OsuVS::define()]
+    // vec![Ping::define(), Roll::define(), OsuVS::define()]
+    vec![Ping::define(), Roll::define()]
 }
 
 fn log_slash(ctx: &Context, command: &ApplicationCommand, cmd_name: &str) {
@@ -45,9 +46,9 @@ pub async fn handle_interaction(ctx: Arc<Context>, command: ApplicationCommand) 
     match name {
         Ping::NAME => Ping::run(ctx, command).await,
         Roll::NAME => Roll::run(ctx, command).await,
-        OsuVS::NAME => OsuVS::run(ctx, command).await,
-        _ => Err(Error::UnknownInteraction {
-            command: Box::new(command),
-        }),
+        // OsuVS::NAME => OsuVS::run(ctx, command).await,
+        // _ => Err(Error::UnknownInteraction {
+        //     command: Box::new(command),
+        // }),
     }
 }
